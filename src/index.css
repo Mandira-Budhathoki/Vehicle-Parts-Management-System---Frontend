@@ -1,0 +1,288 @@
+:root {
+  --bg-primary: #0f1115;
+  --bg-secondary: #1a1d24;
+  --bg-tertiary: #232730;
+
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  --accent-primary: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-light: rgba(99, 102, 241, 0.1);
+
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+
+  --border-color: #272a33;
+  --border-radius-sm: 6px;
+  --border-radius: 12px;
+  --border-radius-lg: 20px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --surface-color: #1a1d24;
+  --card-bg: #1a1d24;
+  --input-bg: transparent;
+  --input-text: #ffffff;
+  --input-border: #272a33;
+  --placeholder-color: #71717a;
+  --nav-link-color: #a1a1aa;
+  --nav-link-hover-color: #ffffff;
+  --nav-link-hover-bg: rgba(255, 255, 255, 0.02);
+}
+
+/* ─── Light Theme ─────────────────────────────────────────────────── */
+[data-bs-theme="light"] {
+  --bg-primary: #f0f2f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-muted: #6c757d;
+  --border-color: #dee2e6;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
+  --surface-color: #ffffff;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-text: #212529;
+  --input-border: #ced4da;
+  --placeholder-color: #adb5bd;
+  --nav-link-color: #495057;
+  --nav-link-hover-color: #212529;
+  --nav-link-hover-bg: rgba(0, 0, 0, 0.05);
+}
+
+/* ─── Base ────────────────────────────────────────────────────────── */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ─── App Layout ──────────────────────────────────────────────────── */
+.app-layout {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ─── Sidebar ─────────────────────────────────────────────────────── */
+.app-sidebar {
+  background-color: var(--surface-color) !important;
+  border-color: var(--border-color) !important;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.app-sidebar .sidebar-divider {
+  border-color: var(--border-color) !important;
+}
+
+.app-sidebar .sidebar-badge {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-bs-theme="light"] .sidebar-badge {
+  color: var(--text-secondary) !important;
+}
+
+.nav-link-custom {
+  color: var(--nav-link-color) !important;
+  transition: all 0.2s;
+}
+
+.nav-link-custom:hover {
+  color: var(--nav-link-hover-color) !important;
+  background-color: var(--nav-link-hover-bg) !important;
+}
+
+.nav-link-custom.active {
+  color: var(--accent-primary) !important;
+  background-color: var(--accent-light) !important;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+.app-header {
+  background-color: var(--surface-color) !important;
+  border-color: var(--border-color) !important;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.app-header .input-group-text {
+  background-color: transparent !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-secondary) !important;
+}
+
+.app-header .form-control {
+  background-color: transparent !important;
+  border-color: var(--input-border) !important;
+  color: var(--input-text) !important;
+}
+
+.app-header .form-control::placeholder {
+  color: var(--placeholder-color) !important;
+}
+
+.app-header .form-control:focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: none !important;
+}
+
+.app-header .input-group:focus-within .input-group-text,
+.app-header .input-group:focus-within .form-control {
+  border-color: var(--accent-primary) !important;
+}
+
+.app-header .nav-icon-btn {
+  color: var(--text-primary) !important;
+}
+
+.app-header .nav-icon-btn:hover {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.app-header .user-name {
+  color: var(--text-primary) !important;
+}
+
+/* ─── Bootstrap class overrides in light mode ─────────────────────── */
+[data-bs-theme="light"] .bg-dark {
+  background-color: var(--card-bg) !important;
+}
+
+[data-bs-theme="light"] .text-light {
+  color: var(--text-primary) !important;
+}
+
+[data-bs-theme="light"] .border-secondary {
+  border-color: var(--border-color) !important;
+}
+
+[data-bs-theme="light"] .bg-secondary.bg-opacity-10 {
+  background-color: var(--bg-tertiary) !important;
+}
+
+[data-bs-theme="light"] .text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+[data-bs-theme="light"] .form-control,
+[data-bs-theme="light"] .bg-dark.form-control {
+  background-color: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  border-color: var(--input-border) !important;
+}
+
+[data-bs-theme="light"] .form-control::placeholder {
+  color: var(--placeholder-color) !important;
+}
+
+[data-bs-theme="light"] .input-group-text {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-bs-theme="light"] .dropdown-menu {
+  background-color: var(--surface-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-bs-theme="light"] .dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+[data-bs-theme="light"] .dropdown-item:hover {
+  background-color: var(--bg-tertiary) !important;
+}
+
+[data-bs-theme="light"] .alert.bg-dark {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-bs-theme="light"] .btn-outline-secondary {
+  color: var(--text-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-bs-theme="light"] .btn-outline-secondary:hover {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ─── Glass Panel ─────────────────────────────────────────────────── */
+.glass-panel {
+  background: rgba(26, 29, 36, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+[data-bs-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────── */
+.btn-primary {
+  background-color: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover) !important;
+  border-color: var(--accent-hover) !important;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ─── Animations ──────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
