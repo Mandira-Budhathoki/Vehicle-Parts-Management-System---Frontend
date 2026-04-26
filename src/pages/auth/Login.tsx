@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockLogin } from '../../services/mockApi';
+import { loginCustomer } from '../../services/customerApi';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -17,18 +18,23 @@ export const Login: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      const user = await mockLogin(email);
-      localStorage.setItem('userRole', user.role);
-      localStorage.setItem('userName', user.name);
-      
-      login(user); // Update the App's Auth context!
-      
-      // Redirect based on role
-      if (user.role === 'admin') navigate('/admin/dashboard');
-      else if (user.role === 'staff') navigate('/staff/dashboard');
-      else navigate('/customer/profile');
+      const userData = await loginCustomer({ email, password });
+
+      // Map backend response to auth context user
+      const user = {
+        id: userData.userId,
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        role: 'customer' as const,
+      };
+
+      login(user);
+
+      // Redirect to customer profile
+      navigate('/customer/profile');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -52,14 +58,20 @@ export const Login: React.FC = () => {
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. admin@vp.com" 
+              placeholder="e.g. john@example.com" 
               required 
             />
           </div>
           
           <div className="form-group">
-            <label>Password (Mock)</label>
-            <input type="password" placeholder="Any password works" />
+            <label>Password</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password" 
+              required 
+            />
           </div>
 
           <button type="submit" className="btn btn-primary w-full" disabled={loading}>
@@ -69,14 +81,6 @@ export const Login: React.FC = () => {
 
         <div className="login-footer">
           <p>Don't have an account? <span className="link" onClick={() => navigate('/register')}>Register</span></p>
-          <div className="test-credentials">
-            <p><strong>Test Accounts:</strong></p>
-            <ul>
-              <li>admin@vp.com</li>
-              <li>staff@vp.com</li>
-              <li>alice@vp.com</li>
-            </ul>
-          </div>
         </div>
       </div>
 
@@ -151,21 +155,8 @@ export const Login: React.FC = () => {
         .link:hover {
           text-decoration: underline;
         }
-
-        .test-credentials {
-          margin-top: 1.5rem;
-          background: var(--bg-tertiary);
-          padding: 1rem;
-          border-radius: var(--border-radius-sm);
-          text-align: left;
-          font-size: 0.85rem;
-        }
-        
-        .test-credentials ul {
-          margin-top: 0.5rem;
-          padding-left: 1.5rem;
-        }
       `}</style>
     </div>
   );
 };
+

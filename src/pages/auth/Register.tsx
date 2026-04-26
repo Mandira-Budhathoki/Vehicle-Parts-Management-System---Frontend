@@ -1,15 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { registerCustomer } from '../../services/customerApi';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
+import { useToast } from '../../context/ToastContext';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock successful signup and redirect login
-    alert("Registration successful! Please login.");
-    navigate('/login');
+    setError('');
+    setLoading(true);
+    try {
+      await registerCustomer(formData);
+      showToast('Registration successful! Please login with your credentials.', 'success');
+      navigate('/login');
+    } catch (err: any) {
+      showToast(err.message || 'Registration failed. Please try again.', 'danger');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -21,32 +44,58 @@ export const Register: React.FC = () => {
         <h2 className="title">Create Account</h2>
         <p className="subtitle">Join as a new Customer</p>
 
+        {error && <div className="alert-error">{error}</div>}
+
         <form onSubmit={handleRegister} className="register-form">
           <div className="form-row">
             <div className="form-group w-full">
               <label>Full Name</label>
-              <input type="text" placeholder="John Doe" required />
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="John Doe"
+                required
+              />
             </div>
           </div>
           <div className="form-group">
             <label>Email Address</label>
-            <input type="email" placeholder="john@example.com" required />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="john@example.com"
+              required
+            />
           </div>
           <div className="form-group">
             <label>Phone Number</label>
-            <input type="tel" placeholder="1234567890" required />
-          </div>
-          <div className="form-group">
-            <label>Vehicle Number (Optional)</label>
-            <input type="text" placeholder="ABC-1234" />
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="1234567890"
+              required
+            />
           </div>
           <div className="form-group">
             <label>Password</label>
-            <input type="password" required />
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Create a password"
+              required
+            />
           </div>
 
-          <button type="submit" className="btn btn-primary w-full mt-4">
-            Register Let's Go
+          <button type="submit" className="btn btn-primary w-full mt-4" disabled={loading}>
+            {loading ? 'Registering...' : "Register — Let's Go"}
           </button>
         </form>
 
@@ -73,6 +122,16 @@ export const Register: React.FC = () => {
         
         .title { font-size: 1.75rem; text-align: center; }
         .subtitle { color: var(--text-secondary); text-align: center; margin-bottom: 2rem; }
+
+        .alert-error {
+          background-color: rgba(239, 68, 68, 0.1);
+          color: var(--danger);
+          padding: 0.75rem;
+          border-radius: var(--border-radius-sm);
+          margin-bottom: 1.5rem;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          font-size: 0.9rem;
+        }
 
         .register-form {
           display: flex;
@@ -112,3 +171,4 @@ export const Register: React.FC = () => {
     </div>
   );
 };
+

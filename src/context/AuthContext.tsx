@@ -3,9 +3,10 @@ import React, { createContext, useContext, useState, type ReactNode } from 'reac
 export type Role = 'admin' | 'staff' | 'customer' | null;
 
 export interface User {
-  id: string;
+  id: number;
   name: string;
   email: string;
+  phone?: string;
   role: Role;
 }
 
@@ -14,6 +15,7 @@ interface AuthContextType {
   role: Role;
   login: (userData: User) => void;
   logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
   isAuthenticated: boolean;
 }
 
@@ -21,22 +23,39 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const savedRole = localStorage.getItem('userRole') as Role;
-    const savedName = localStorage.getItem('userName');
-    if (savedRole && savedName) {
-      return { id: '1', name: savedName, email: 'mock@example.com', role: savedRole };
+    const savedUser = localStorage.getItem('userData');
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser);
+      } catch {
+        return null;
+      }
     }
     return null;
   });
 
   const login = (userData: User) => {
     setUser(userData);
+    localStorage.setItem('userData', JSON.stringify(userData));
+    // Keep legacy keys for compatibility
+    localStorage.setItem('userRole', userData.role || '');
+    localStorage.setItem('userName', userData.name);
   };
 
   const logout = () => {
+    localStorage.removeItem('userData');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
     setUser(null);
+  };
+
+  const updateUser = (userData: Partial<User>) => {
+    setUser(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, ...userData };
+      localStorage.setItem('userData', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   return (
@@ -45,6 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       role: user?.role || null,
       login,
       logout,
+      updateUser,
       isAuthenticated: !!user
     }}>
       {children}
@@ -59,3 +79,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
