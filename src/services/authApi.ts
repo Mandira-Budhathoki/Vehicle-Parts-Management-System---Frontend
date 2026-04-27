@@ -2,6 +2,7 @@
 // Connects to the ASP.NET Core backend
 
 const API_BASE = '/api/auth';
+const API = '/api';
 
 // ==================== Customer API ====================
 
@@ -37,7 +38,7 @@ export interface Vehicle extends VehicleData {
 
 // Register a new customer
 export const registerCustomer = async (data: RegisterData): Promise<{ message: string }> => {
-  const response = await fetch(`${API_BASE}/customer/register`, {
+  const response = await fetch(`${API}/customer/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -68,7 +69,7 @@ export const loginUser = async (data: LoginData) => {
 
 // Get customer profile
 export const getProfile = async (id: number): Promise<UserProfile> => {
-  const response = await fetch(`${API_BASE}/customer/${id}`);
+    const response = await fetch(`${API}/customer/${id}`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch profile');
@@ -79,7 +80,7 @@ export const getProfile = async (id: number): Promise<UserProfile> => {
 
 // Update customer profile
 export const updateProfile = async (id: number, data: Partial<RegisterData>): Promise<{ message: string }> => {
-  const response = await fetch(`${API_BASE}/customer/${id}`, {
+    const response = await fetch(`${API}/customer/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -96,7 +97,7 @@ export const updateProfile = async (id: number, data: Partial<RegisterData>): Pr
 
 // Get all vehicles for a user
 export const getVehicles = async (userId: number): Promise<Vehicle[]> => {
-  const response = await fetch(`${API_BASE}/vehicle/user/${userId}`);
+    const response = await fetch(`${API}/vehicle/user/${userId}`);
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Failed to fetch vehicles' }));
@@ -108,7 +109,7 @@ export const getVehicles = async (userId: number): Promise<Vehicle[]> => {
 
 // Add a vehicle for a user
 export const addVehicle = async (userId: number, data: VehicleData): Promise<{ message: string }> => {
-  const response = await fetch(`${API_BASE}/vehicle/${userId}`, {
+    const response = await fetch(`${API}/vehicle/${userId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -124,7 +125,7 @@ export const addVehicle = async (userId: number, data: VehicleData): Promise<{ m
 
 // Update a vehicle
 export const updateVehicle = async (id: number, data: VehicleData): Promise<{ message: string }> => {
-  const response = await fetch(`${API_BASE}/vehicle/${id}`, {
+    const response = await fetch(`${API}/vehicle/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -140,7 +141,7 @@ export const updateVehicle = async (id: number, data: VehicleData): Promise<{ me
 
 // Delete a vehicle
 export const deleteVehicle = async (id: number): Promise<{ message: string }> => {
-  const response = await fetch(`${API_BASE}/vehicle/${id}`, {
+    const response = await fetch(`${API}/vehicle/${id}`, {
     method: 'DELETE',
   });
 
