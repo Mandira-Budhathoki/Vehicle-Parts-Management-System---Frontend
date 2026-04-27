@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import { Card, Table, Badge, Button, Modal, Form, Spinner } from 'react-bootstrap';
 import { getStaff, registerStaff, updateStaff, deleteStaff, type User } from '../../services/staffService';
 
-export const StaffManagement: React.FC = () => {
+export const StaffManagement: FC = () => {
   const [staff, setStaff] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -105,6 +105,7 @@ export const StaffManagement: React.FC = () => {
           <i className="bi bi-plus-lg"></i> Register New Staff
         </Button>
       </div>
+      {error && <div className="alert alert-danger mx-4 mb-3">{error}</div>}
 
       <Card className="bg-dark text-light border-secondary shadow-lg">
         <Card.Body className="p-0 overflow-hidden">
