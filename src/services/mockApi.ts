@@ -40,3 +40,40 @@ export const mockLogin = async (email: string): Promise<User> => {
     }, 500);
   });
 };
+
+// Staff Management Mock Functions
+export const registerStaffMock = async (data: any) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const newUser = { ...data, id: Math.random().toString(36).substr(2, 9) };
+      mockUsers.push(newUser);
+      resolve(newUser);
+    }, 500);
+  });
+};
+
+export const updateStaffMock = async (id: string, data: any) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const index = mockUsers.findIndex(u => u.id === id);
+      if (index !== -1) {
+        mockUsers[index] = { ...mockUsers[index], ...data };
+        resolve(mockUsers[index]);
+      } else {
+        reject(new Error('User not found'));
+      }
+    }, 500);
+  });
+};
+
+export const deleteStaffMock = async (id: string) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const index = mockUsers.findIndex(u => u.id === id);
+      if (index !== -1) {
+        mockUsers.splice(index, 1);
+      }
+      resolve(true);
+    }, 500);
+  });
+};
