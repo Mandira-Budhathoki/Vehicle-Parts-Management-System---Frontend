@@ -12,8 +12,8 @@ import {
   deleteVehicle,
   type UserProfile,
   type Vehicle,
-  type VehicleData,
-} from '../../services/customerApi';
+    type VehicleData,
+} from '../../services/authApi';
 
 export const CustomerPortal: React.FC = () => {
   const { user, updateUser } = useAuth();

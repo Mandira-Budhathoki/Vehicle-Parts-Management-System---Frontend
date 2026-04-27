@@ -1,7 +1,7 @@
 // API service for Customer and Vehicle endpoints
 // Connects to the ASP.NET Core backend
 
-const API_BASE = '/api';
+const API_BASE = '/api/auth';
 
 // ==================== Customer API ====================
 
@@ -51,20 +51,19 @@ export const registerCustomer = async (data: RegisterData): Promise<{ message: s
   return response.json();
 };
 
-// Login a customer
-export const loginCustomer = async (data: LoginData): Promise<UserProfile> => {
-  const response = await fetch(`${API_BASE}/customer/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
+// Login a user
+export const loginUser = async (data: LoginData) => {
+    const response = await fetch(`${API_BASE}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Invalid email or password' }));
-    throw new Error(error.message || 'Login failed');
-  }
+    if (!response.ok) {
+        throw new Error('Invalid email or password');
+    }
 
-  return response.json();
+    return response.json();
 };
 
 // Get customer profile

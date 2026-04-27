@@ -3,11 +3,12 @@ import React, { createContext, useContext, useState, type ReactNode } from 'reac
 export type Role = 'admin' | 'staff' | 'customer' | null;
 
 export interface User {
-  id: number;
-  name: string;
-  email: string;
-  phone?: string;
-  role: Role;
+    id: number;
+    name: string;
+    email: string;
+    phone?: string;
+    role: Role;
+    token?: string;
 }
 
 interface AuthContextType {
@@ -34,20 +35,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return null;
   });
 
-  const login = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('userData', JSON.stringify(userData));
-    // Keep legacy keys for compatibility
-    localStorage.setItem('userRole', userData.role || '');
-    localStorage.setItem('userName', userData.name);
-  };
+    const login = (userData: User) => {
+        setUser(userData);
+        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('userRole', userData.role || '');
+        localStorage.setItem('userName', userData.name);
 
-  const logout = () => {
-    localStorage.removeItem('userData');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    setUser(null);
-  };
+        if (userData.token) {
+            localStorage.setItem('token', userData.token);
+        }
+    };
+
+    const logout = () => {
+        localStorage.removeItem('userData');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('token');
+        setUser(null);
+    };
 
   const updateUser = (userData: Partial<User>) => {
     setUser(prev => {
