@@ -4,52 +4,62 @@
 const API_BASE = '/api/auth';
 const API = '/api';
 
-// ==================== Customer API ====================
+const authHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+};
+
+// ==================== Types ====================
 
 export interface RegisterData {
-  name: string;
-  email: string;
-  password: string;
-  phone: string;
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
 }
 
 export interface LoginData {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 
 export interface UserProfile {
-  userId: number;
-  name: string;
-  email: string;
-  phone: string;
+    userId: number;
+    name: string;
+    email: string;
+    phone: string;
 }
 
 export interface VehicleData {
-  vehicleNumber: string;
-  model: string;
-  brand: string;
-  year: number;
+    vehicleNumber: string;
+    model: string;
+    brand: string;
+    year: number;
 }
 
 export interface Vehicle extends VehicleData {
-  vehicleId: number;
+    vehicleId: number;
 }
+
+// ==================== Auth ====================
 
 // Register a new customer
 export const registerCustomer = async (data: RegisterData): Promise<{ message: string }> => {
-  const response = await fetch(`${API}/customer/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
+    const response = await fetch(`${API}/customer/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Registration failed' }));
-    throw new Error(error.message || 'Registration failed');
-  }
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Registration failed' }));
+        throw new Error(error.message || 'Registration failed');
+    }
 
-  return response.json();
+    return response.json();
 };
 
 // Login a user
@@ -67,89 +77,95 @@ export const loginUser = async (data: LoginData) => {
     return response.json();
 };
 
-// Get customer profile
+// ==================== Customer Profile ====================
+
+// Get customer profile  (FIX: now sends auth token)
 export const getProfile = async (id: number): Promise<UserProfile> => {
-    const response = await fetch(`${API}/customer/${id}`);
+    const response = await fetch(`${API}/customer/${id}`, {
+        headers: authHeaders(),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch profile');
-  }
+    if (!response.ok) {
+        throw new Error('Failed to fetch profile');
+    }
 
-  return response.json();
+    return response.json();
 };
 
-// Update customer profile
+// Update customer profile  (FIX: now sends auth token)
 export const updateProfile = async (id: number, data: Partial<RegisterData>): Promise<{ message: string }> => {
     const response = await fetch(`${API}/customer/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to update profile');
-  }
+    if (!response.ok) {
+        throw new Error('Failed to update profile');
+    }
 
-  return response.json();
+    return response.json();
 };
 
 // ==================== Vehicle API ====================
 
-// Get all vehicles for a user
+// Get all vehicles for a user  (FIX: now sends auth token)
 export const getVehicles = async (userId: number): Promise<Vehicle[]> => {
-    const response = await fetch(`${API}/vehicle/user/${userId}`);
+    const response = await fetch(`${API}/vehicle/user/${userId}`, {
+        headers: authHeaders(),
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Failed to fetch vehicles' }));
-    throw new Error(error.message || 'Failed to fetch vehicles');
-  }
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to fetch vehicles' }));
+        throw new Error(error.message || 'Failed to fetch vehicles');
+    }
 
-  return response.json();
+    return response.json();
 };
 
-// Add a vehicle for a user
+// Add a vehicle for a user  (FIX: now sends auth token)
 export const addVehicle = async (userId: number, data: VehicleData): Promise<{ message: string }> => {
     const response = await fetch(`${API}/vehicle/${userId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Failed to add vehicle' }));
-    throw new Error(error.message || 'Failed to add vehicle');
-  }
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to add vehicle' }));
+        throw new Error(error.message || 'Failed to add vehicle');
+    }
 
-  return response.json();
+    return response.json();
 };
 
-// Update a vehicle
+// Update a vehicle  (FIX: now sends auth token)
 export const updateVehicle = async (id: number, data: VehicleData): Promise<{ message: string }> => {
     const response = await fetch(`${API}/vehicle/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Failed to update vehicle' }));
-    throw new Error(error.message || 'Failed to update vehicle');
-  }
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to update vehicle' }));
+        throw new Error(error.message || 'Failed to update vehicle');
+    }
 
-  return response.json();
+    return response.json();
 };
 
-// Delete a vehicle
+// Delete a vehicle  (FIX: now sends auth token)
 export const deleteVehicle = async (id: number): Promise<{ message: string }> => {
     const response = await fetch(`${API}/vehicle/${id}`, {
-    method: 'DELETE',
-  });
+        method: 'DELETE',
+        headers: authHeaders(),
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Failed to delete vehicle' }));
-    throw new Error(error.message || 'Failed to delete vehicle');
-  }
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to delete vehicle' }));
+        throw new Error(error.message || 'Failed to delete vehicle');
+    }
 
-  return response.json();
+    return response.json();
 };
-
