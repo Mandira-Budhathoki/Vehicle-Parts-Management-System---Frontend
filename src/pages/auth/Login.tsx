@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginCustomer } from '../../services/customerApi';
-import { useAuth } from '../../context/AuthContext';
+import { loginUser } from '../../services/customerApi';
+import { useAuth, type Role } from '../../context/AuthContext';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 
 export const Login: React.FC = () => {
@@ -18,21 +18,37 @@ export const Login: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      const userData = await loginCustomer({ email, password });
+      const response = await loginUser({ email, password }) as any;
+      console.log('Login response:', response);
+
+      // Save token for API calls
+      const token = response.token || response.Token;
+      if (token) localStorage.setItem('token', token);
+
+      // Normalize role (handle both 'role' and 'Role' keys)
+      const rawRole = response.role || response.Role || 'customer';
+      const normalizedRole = rawRole.toLowerCase() as Role;
+      
+      console.log('Normalized role:', normalizedRole);
 
       // Map backend response to auth context user
       const user = {
-        id: userData.userId,
-        name: userData.name,
-        email: userData.email,
-        phone: userData.phone,
-        role: 'customer' as const,
+        id: response.userId || response.UserId || 0,
+        name: response.name || response.Name,
+        email: email,
+        role: normalizedRole,
       };
 
       login(user);
 
-      // Redirect to customer profile
-      navigate('/customer/profile');
+      // Redirect based on role
+      if (normalizedRole === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (normalizedRole === 'staff') {
+        navigate('/staff/dashboard');
+      } else {
+        navigate('/customer/profile');
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -48,29 +64,29 @@ export const Login: React.FC = () => {
       <div className="glass-panel login-card">
         <h2 className="title">Welcome Back</h2>
         <p className="subtitle">Sign in to your account</p>
-        
+
         {error && <div className="alert-error">{error}</div>}
 
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
             <label>Email Address</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. john@example.com" 
-              required 
+              placeholder="e.g. john@example.com"
+              required
             />
           </div>
-          
+
           <div className="form-group">
             <label>Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password" 
-              required 
+              placeholder="Enter your password"
+              required
             />
           </div>
 
