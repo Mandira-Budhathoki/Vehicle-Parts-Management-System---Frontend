@@ -3,6 +3,29 @@
 
 const API_BASE = '/api';
 
+// ==================== Auth API (All Roles) ====================
+
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
+// Unified login for admin, staff, and customer — used by Login.tsx
+export const loginUser = async (data: LoginData): Promise<any> => {
+  const response = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Invalid email or password' }));
+    throw new Error(error.message || 'Login failed');
+  }
+
+  return response.json();
+};
+
 // ==================== Customer API ====================
 
 export interface RegisterData {
