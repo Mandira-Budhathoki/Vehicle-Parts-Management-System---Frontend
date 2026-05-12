@@ -107,7 +107,7 @@ export const VendorsManagement: FC = () => {
               <p className="mt-2 text-secondary">Loading vendors...</p>
             </div>
           ) : (
-            <Table hover variant="dark" responsive className="mb-0">
+            <Table hover responsive className="mb-0">
               <thead className="bg-black bg-opacity-20">
                 <tr>
                   <th className="p-3 border-bottom-0">Vendor Name</th>
