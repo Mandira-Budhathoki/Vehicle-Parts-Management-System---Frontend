@@ -33,7 +33,7 @@ export const Login: React.FC = () => {
             const userRole = response.role.toLowerCase() as Role;
 
             login({
-                id: 1,
+                id: response.userId,
                 name: response.name,
                 email: email,
                 role: userRole,

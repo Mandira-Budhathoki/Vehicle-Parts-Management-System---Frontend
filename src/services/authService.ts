@@ -1,6 +1,7 @@
 import api from './api';
 
 export interface LoginResponse {
+    userId: number;
   token: string;
   role: string;
   name: string;
