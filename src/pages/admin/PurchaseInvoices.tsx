@@ -117,7 +117,7 @@ export const PurchaseInvoices: React.FC = () => {
               <Spinner animation="border" variant="primary" />
             </div>
           ) : (
-            <Table hover variant="dark" responsive className="mb-0">
+            <Table hover responsive className="mb-0">
               <thead className="border-secondary">
                 <tr>
                   <th className="p-3 border-bottom-0">Invoice ID</th>
