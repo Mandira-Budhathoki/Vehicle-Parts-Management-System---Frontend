@@ -1,8 +1,9 @@
-const API_BASE = '/api/admin';
+const API_BASE = '/api';
 
 export interface Part {
   partId: number;
   partName: string;
+  category: string;
   description: string;
   price: number;
   stockQuantity: number;
@@ -12,6 +13,7 @@ export interface Part {
 
 export interface CreatePartData {
   partName: string;
+  category: string;
   description: string;
   price: number;
   stockQuantity: number;
