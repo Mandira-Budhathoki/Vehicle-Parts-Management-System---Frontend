@@ -3,6 +3,11 @@
 
 const API_BASE = '/api';
 
+export const getAuthHeader = (): Record<string, string> => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // ==================== Customer API ====================
 
 export interface RegisterData {
@@ -61,6 +66,21 @@ export const loginCustomer = async (data: LoginData): Promise<UserProfile> => {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Invalid email or password' }));
+    throw new Error(error.message || 'Login failed');
+  }
+
+  return response.json();
+};
+
+export const loginUser = async (data: LoginData): Promise<{ token: string; role: string; name: string }> => {
+  const response = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Invalid credentials' }));
     throw new Error(error.message || 'Login failed');
   }
 

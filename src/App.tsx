@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -16,6 +15,7 @@ import { StaffManagement as AdminStaff } from './pages/admin/StaffManagement';
 import { PartsManagement as AdminParts } from './pages/admin/PartsManagement';
 import { VendorsManagement as AdminVendors } from './pages/admin/VendorsManagement';
 import { PurchaseInvoices as AdminInvoices } from './pages/admin/PurchaseInvoices';
+import { CreatePurchaseInvoice } from './pages/admin/CreatePurchaseInvoice';
 
 // Staff
 import { StaffDashboard } from './pages/staff/StaffDashboard';
@@ -53,7 +53,8 @@ function App() {
                     <Route path="staff" element={<ProtectedRoute allowedRoles={['admin']}><AdminStaff /></ProtectedRoute>} />
                     <Route path="parts" element={<ProtectedRoute allowedRoles={['admin']}><AdminParts /></ProtectedRoute>} />
                     <Route path="vendors" element={<ProtectedRoute allowedRoles={['admin']}><AdminVendors /></ProtectedRoute>} />
-                    <Route path="invoices" element={<AdminInvoices />} />
+                    <Route path="invoices" element={<ProtectedRoute allowedRoles={['admin']}><AdminInvoices /></ProtectedRoute>} />
+                    <Route path="invoices/new" element={<ProtectedRoute allowedRoles={['admin']}><CreatePurchaseInvoice /></ProtectedRoute>} />
                   </Route>
 
                   {/* Staff Routes */}
