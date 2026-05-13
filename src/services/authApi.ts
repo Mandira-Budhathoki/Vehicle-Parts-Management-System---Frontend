@@ -37,7 +37,7 @@ export interface Vehicle extends VehicleData {
 }
 
 // Register a new customer
-export const registerCustomer = async (data: RegisterData): Promise<{ message: string }> => {
+export const registerCustomer = async (data: RegisterData): Promise<{ message: string; userId: number }> => {
   const response = await fetch(`${API}/customer/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

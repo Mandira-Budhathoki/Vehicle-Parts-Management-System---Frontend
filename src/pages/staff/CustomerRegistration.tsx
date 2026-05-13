@@ -1,7 +1,70 @@
-import React from 'react';
-import { Card, Form, Row, Col, Button } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Card, Form, Row, Col, Button, Alert, Spinner } from 'react-bootstrap';
+import { registerCustomer, addVehicle } from '../../services/authApi';
 
 export const CustomerRegistration: React.FC = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    vehicleModel: '',
+    vehicleBrand: '',
+    vehicleYear: new Date().getFullYear().toString(),
+    vehicleNumber: '',
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccess(null);
+    setError(null);
+
+    try {
+      // 1. Register the Customer
+      const registerRes = await registerCustomer({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: 'Password123!', // Default password for walk-in customers
+      });
+
+      const newUserId = registerRes.userId;
+
+      // 2. Register the Vehicle linked to the new Customer
+      await addVehicle(newUserId, {
+        vehicleNumber: formData.vehicleNumber,
+        model: formData.vehicleModel,
+        brand: formData.vehicleBrand,
+        year: parseInt(formData.vehicleYear),
+      });
+
+      setSuccess('Customer and Vehicle successfully registered!');
+      
+      // Clear form
+      setFormData({
+        name: '',
+        phone: '',
+        email: '',
+        vehicleModel: '',
+        vehicleBrand: '',
+        vehicleYear: new Date().getFullYear().toString(),
+        vehicleNumber: '',
+      });
+    } catch (err: any) {
+      setError(err.message || 'Failed to register customer. Please check the details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="d-flex align-items-center gap-3 mb-4">
@@ -11,45 +74,70 @@ export const CustomerRegistration: React.FC = () => {
 
       <Card className="bg-dark text-light border-secondary" style={{ maxWidth: '800px' }}>
         <Card.Body className="p-4">
-          <Form>
+          {success && <Alert variant="success">{success}</Alert>}
+          {error && <Alert variant="danger">{error}</Alert>}
+
+          <Form onSubmit={handleSubmit}>
             <Row className="g-3 mb-3">
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="text-secondary">Full Name</Form.Label>
-                  <Form.Control type="text" placeholder="e.g. Jane Smith" className="bg-dark text-light border-secondary shadow-none" />
+                  <Form.Label className="text-secondary">Full Name <span className="text-danger">*</span></Form.Label>
+                  <Form.Control required name="name" value={formData.name} onChange={handleChange} type="text" placeholder="e.g. Jane Smith" className="bg-dark text-light border-secondary shadow-none" />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="text-secondary">Phone Number</Form.Label>
-                  <Form.Control type="tel" placeholder="123-456-7890" className="bg-dark text-light border-secondary shadow-none" />
+                  <Form.Label className="text-secondary">Phone Number <span className="text-danger">*</span></Form.Label>
+                  <Form.Control required name="phone" value={formData.phone} onChange={handleChange} type="tel" placeholder="123-456-7890" className="bg-dark text-light border-secondary shadow-none" />
                 </Form.Group>
               </Col>
             </Row>
             
             <Form.Group className="mb-4">
-              <Form.Label className="text-secondary">Email Address</Form.Label>
-              <Form.Control type="email" placeholder="jane@example.com" className="bg-dark text-light border-secondary shadow-none" />
+              <Form.Label className="text-secondary">Email Address <span className="text-danger">*</span></Form.Label>
+              <Form.Control required name="email" value={formData.email} onChange={handleChange} type="email" placeholder="jane@example.com" className="bg-dark text-light border-secondary shadow-none" />
             </Form.Group>
 
             <h5 className="mt-4 mb-3 pt-4 border-top border-secondary fw-bold">Vehicle Information</h5>
-            <Row className="g-3 mb-4">
+            <Row className="g-3 mb-3">
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="text-secondary">Vehicle Make & Model</Form.Label>
-                  <Form.Control type="text" placeholder="e.g. Toyota Camry" className="bg-dark text-light border-secondary shadow-none" />
+                  <Form.Label className="text-secondary">Vehicle Brand <span className="text-danger">*</span></Form.Label>
+                  <Form.Control required name="vehicleBrand" value={formData.vehicleBrand} onChange={handleChange} type="text" placeholder="e.g. Toyota" className="bg-dark text-light border-secondary shadow-none" />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="text-secondary">Vehicle Registration Number</Form.Label>
-                  <Form.Control type="text" placeholder="ABC-1234" className="bg-dark text-light border-secondary shadow-none" />
+                  <Form.Label className="text-secondary">Vehicle Model <span className="text-danger">*</span></Form.Label>
+                  <Form.Control required name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} type="text" placeholder="e.g. Camry" className="bg-dark text-light border-secondary shadow-none" />
                 </Form.Group>
               </Col>
             </Row>
 
-            <Button variant="primary" type="button" className="w-100 py-2 fw-bold">
-              Register Customer in System
+            <Row className="g-3 mb-4">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="text-secondary">Vehicle Year <span className="text-danger">*</span></Form.Label>
+                  <Form.Control required name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} type="number" min="1900" max={new Date().getFullYear() + 1} className="bg-dark text-light border-secondary shadow-none" />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="text-secondary">Registration Number (Plate) <span className="text-danger">*</span></Form.Label>
+                  <Form.Control required name="vehicleNumber" value={formData.vehicleNumber} onChange={handleChange} type="text" placeholder="ABC-1234" className="bg-dark text-light border-secondary shadow-none" />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Button variant="primary" type="submit" disabled={loading} className="w-100 py-2 fw-bold">
+              {loading ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                  Registering...
+                </>
+              ) : (
+                'Register Customer in System'
+              )}
             </Button>
           </Form>
         </Card.Body>
