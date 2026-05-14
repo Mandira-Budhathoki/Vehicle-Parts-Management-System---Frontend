@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Table, Badge, Button } from 'react-bootstrap';
-import { mockUsers, type User } from '../../services/mockApi';
+const mockUsers: any[] = []; const mockParts: any[] = []; type User = any;
 
 export const StaffManagement: React.FC = () => {
   const [users] = useState<User[]>(mockUsers.filter(u => u.role === 'staff' || u.role === 'admin'));
@@ -50,3 +50,4 @@ export const StaffManagement: React.FC = () => {
     </div>
   );
 };
+

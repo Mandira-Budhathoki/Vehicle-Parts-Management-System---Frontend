@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col, Card, Table, Button, Badge } from 'react-bootstrap';
-import { mockUsers } from '../../services/mockApi';
+const mockUsers: any[] = []; const mockParts: any[] = []; type User = any;
 
 export const StaffReports: React.FC = () => {
   const highSpenders = mockUsers.filter(u => u.role === 'customer' && u.totalSpent && u.totalSpent > 2000);
@@ -87,3 +87,4 @@ export const StaffReports: React.FC = () => {
     </div>
   );
 };
+
