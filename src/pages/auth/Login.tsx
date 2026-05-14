@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginCustomer } from '../../services/customerApi';
+import { loginUser } from '../../services/customerApi';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 
@@ -18,21 +18,32 @@ export const Login: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      const userData = await loginCustomer({ email, password });
+      const response = await loginUser({ email, password });
+      
+      // Save token to localStorage for API calls
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+      }
 
       // Map backend response to auth context user
+      const userRole = response.role ? response.role.toLowerCase() : 'customer';
       const user = {
-        id: userData.userId,
-        name: userData.name,
-        email: userData.email,
-        phone: userData.phone,
-        role: 'customer' as const,
+        id: response.userId || 1,
+        name: response.name || 'User',
+        email: email,
+        role: userRole as any,
       };
 
       login(user);
 
-      // Redirect to customer profile
-      navigate('/customer/profile');
+      // Redirect based on role
+      if (userRole === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (userRole === 'staff') {
+        navigate('/staff/dashboard');
+      } else {
+        navigate('/customer/profile');
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {

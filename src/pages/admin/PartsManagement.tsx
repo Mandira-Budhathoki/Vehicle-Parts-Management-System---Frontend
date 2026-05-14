@@ -27,8 +27,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Suspension & Steering': 'info',
   'Electrical': 'success',
   'Wheels & Exterior': 'secondary',
-  'Fluids & Consumables': 'dark',
-  'Other': 'light',
+  'Fluids & Consumables': 'primary',
+  'Other': 'secondary',
 };
 
 const emptyForm: CreatePartData = {
@@ -152,7 +152,7 @@ export const PartsManagement: React.FC = () => {
           <i className="bi bi-box-seam me-2 text-primary"></i>Parts Inventory
         </h2>
         <Button variant="primary" className="d-flex align-items-center gap-2" onClick={handleAddNew}>
-          <i className="bi bi-plus-lg"></i> Add New Part
+          <i className="bi bi-cart-plus"></i> Purchase New Part
         </Button>
       </div>
 
@@ -207,7 +207,7 @@ export const PartsManagement: React.FC = () => {
       {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
       {/* Table */}
-      <Card className="bg-dark text-light border-secondary">
+      <Card className="bg-white text-dark shadow-sm border-0">
         <Card.Body className="p-0 overflow-hidden">
           {loading ? (
             <div className="text-center py-5">
@@ -217,13 +217,13 @@ export const PartsManagement: React.FC = () => {
           ) : filteredParts.length === 0 ? (
             <div className="text-center py-5 text-secondary">
               <i className="bi bi-box fs-1 mb-3 d-block"></i>
-              {filterCategory === 'All' ? 'No parts found. Click "Add New Part" to get started.' : `No parts in "${filterCategory}" category.`}
+              {filterCategory === 'All' ? 'No parts found. Click "Purchase New Part" to get started.' : `No parts in "${filterCategory}" category.`}
             </div>
           ) : (
-            <Table hover variant="dark" responsive className="mb-0">
-              <thead className="border-secondary">
+            <Table hover responsive className="mb-0">
+              <thead className="bg-light text-dark">
                 <tr>
-                  <th className="p-3 border-bottom-0">#</th>
+                  <th className="p-3 border-bottom-0">S.No</th>
                   <th className="p-3 border-bottom-0">Part Name</th>
                   <th className="p-3 border-bottom-0">Category</th>
                   <th className="p-3 border-bottom-0">Description</th>
@@ -234,23 +234,23 @@ export const PartsManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredParts.map((p) => (
+                {filteredParts.map((p, index) => (
                   <tr key={p.partId}>
-                    <td className="p-3 border-secondary align-middle text-secondary">{p.partId}</td>
-                    <td className="p-3 border-secondary align-middle fw-semibold">{p.partName}</td>
-                    <td className="p-3 border-secondary align-middle">
+                    <td className="p-3 align-middle text-muted">{index + 1}</td>
+                    <td className="p-3 align-middle fw-semibold">{p.partName}</td>
+                    <td className="p-3 align-middle">
                       <Badge bg={CATEGORY_COLORS[p.category] || 'secondary'} className="px-2 py-1">
                         {p.category || 'Uncategorized'}
                       </Badge>
                     </td>
-                    <td className="p-3 border-secondary align-middle text-secondary" style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td className="p-3 align-middle text-muted" style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {p.description || '—'}
                     </td>
-                    <td className="p-3 border-secondary align-middle fw-medium text-success">
+                    <td className="p-3 align-middle fw-medium text-success">
                       Rs. {Number(p.price).toLocaleString()}
                     </td>
-                    <td className="p-3 border-secondary align-middle">{p.stockQuantity}</td>
-                    <td className="p-3 border-secondary align-middle">
+                    <td className="p-3 align-middle">{p.stockQuantity}</td>
+                    <td className="p-3 align-middle">
                       {p.stockQuantity <= p.reorderLevel ? (
                         <Badge bg="danger" className="d-inline-flex align-items-center gap-1 px-2 py-1">
                           <i className="bi bi-exclamation-triangle-fill"></i> Low Stock
@@ -259,7 +259,7 @@ export const PartsManagement: React.FC = () => {
                         <Badge bg="success" className="px-2 py-1">In Stock</Badge>
                       )}
                     </td>
-                    <td className="p-3 border-secondary align-middle text-end">
+                    <td className="p-3 align-middle text-end">
                       <div className="d-flex gap-2 justify-content-end">
                         <Button variant="outline-info" size="sm" className="border-0" title="Edit" onClick={() => handleEdit(p)}>
                           <i className="bi bi-pencil"></i>
@@ -282,7 +282,7 @@ export const PartsManagement: React.FC = () => {
         <Modal.Header closeButton className="bg-dark text-light border-secondary">
           <Modal.Title>
             <i className={`bi ${editingPart ? 'bi-pencil-square' : 'bi-plus-circle'} me-2`}></i>
-            {editingPart ? 'Edit Part' : 'Add New Part'}
+            {editingPart ? 'Edit Part' : 'Purchase New Part'}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="bg-dark text-light">
@@ -327,8 +327,8 @@ export const PartsManagement: React.FC = () => {
                 <Form.Control
                   type="number"
                   min={0}
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                  value={formData.price === 0 ? '' : formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="bg-dark text-light border-secondary"
                 />
               </Form.Group>
@@ -337,8 +337,8 @@ export const PartsManagement: React.FC = () => {
                 <Form.Control
                   type="number"
                   min={0}
-                  value={formData.stockQuantity}
-                  onChange={(e) => setFormData({ ...formData, stockQuantity: parseInt(e.target.value) || 0 })}
+                  value={formData.stockQuantity === 0 ? '' : formData.stockQuantity}
+                  onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value === '' ? 0 : parseInt(e.target.value) })}
                   className="bg-dark text-light border-secondary"
                 />
               </Form.Group>
@@ -348,8 +348,8 @@ export const PartsManagement: React.FC = () => {
               <Form.Control
                 type="number"
                 min={0}
-                value={formData.reorderLevel}
-                onChange={(e) => setFormData({ ...formData, reorderLevel: parseInt(e.target.value) || 0 })}
+                value={formData.reorderLevel === 0 ? '' : formData.reorderLevel}
+                onChange={(e) => setFormData({ ...formData, reorderLevel: e.target.value === '' ? 0 : parseInt(e.target.value) })}
                 className="bg-dark text-light border-secondary"
               />
               <Form.Text className="text-secondary">Low Stock alert shows when stock ≤ this number</Form.Text>
@@ -359,7 +359,7 @@ export const PartsManagement: React.FC = () => {
         <Modal.Footer className="bg-dark border-secondary">
           <Button variant="secondary" onClick={() => setShowModal(false)} disabled={saving}>Cancel</Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
-            {saving ? <><Spinner size="sm" className="me-1" />Saving...</> : (editingPart ? 'Update Part' : 'Add Part')}
+            {saving ? <><Spinner size="sm" className="me-1" />Saving...</> : (editingPart ? 'Update Part' : 'Purchase Part')}
           </Button>
         </Modal.Footer>
       </Modal>
