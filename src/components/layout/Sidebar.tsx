@@ -29,7 +29,7 @@ const CustomerLinks = [
 
 export const Sidebar: React.FC = () => {
   const { role, logout } = useAuth();
-  const links = role === 'admin' ? AdminLinks : role === 'staff' ? StaffLinks : CustomerLinks;
+  const links = role?.toLowerCase() === 'admin' ? AdminLinks : role?.toLowerCase() === 'staff' ? StaffLinks : CustomerLinks;
 
   return (
     <div

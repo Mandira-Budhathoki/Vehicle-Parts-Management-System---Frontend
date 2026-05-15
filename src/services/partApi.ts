@@ -66,7 +66,7 @@ export const createPart = async (data: CreatePartData): Promise<Part> => {
   return response.json();
 };
 
-export const updatePart = async (id: number, data: CreatePartData): Promise<Part> => {
+export const updatePart = async (id: number, data: CreatePartData): Promise<void> => {
   const response = await fetch(`${API_BASE}/parts/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -76,7 +76,6 @@ export const updatePart = async (id: number, data: CreatePartData): Promise<Part
     const error = await response.json().catch(() => ({ message: 'Failed to update part' }));
     throw new Error(error.message || 'Failed to update part');
   }
-  return response.json();
 };
 
 export const deletePart = async (id: number): Promise<void> => {

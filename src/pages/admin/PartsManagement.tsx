@@ -329,6 +329,7 @@ export const PartsManagement: React.FC = () => {
                   min={0}
                   value={formData.price === 0 ? '' : formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="bg-dark text-light border-secondary"
                 />
               </Form.Group>
@@ -339,6 +340,7 @@ export const PartsManagement: React.FC = () => {
                   min={0}
                   value={formData.stockQuantity === 0 ? '' : formData.stockQuantity}
                   onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value === '' ? 0 : parseInt(e.target.value) })}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="bg-dark text-light border-secondary"
                 />
               </Form.Group>
@@ -350,6 +352,7 @@ export const PartsManagement: React.FC = () => {
                 min={0}
                 value={formData.reorderLevel === 0 ? '' : formData.reorderLevel}
                 onChange={(e) => setFormData({ ...formData, reorderLevel: e.target.value === '' ? 0 : parseInt(e.target.value) })}
+                onWheel={(e) => e.currentTarget.blur()}
                 className="bg-dark text-light border-secondary"
               />
               <Form.Text className="text-secondary">Low Stock alert shows when stock ≤ this number</Form.Text>
