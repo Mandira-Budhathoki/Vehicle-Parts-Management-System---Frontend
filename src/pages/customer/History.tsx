@@ -136,7 +136,7 @@ export const History: React.FC = () => {
                     {sales.length === 0 ? (
                         <p className="text-secondary px-4 pb-4">No purchase history found.</p>
                     ) : (
-                        <Table hover variant="dark" responsive className="mb-0">
+                        <Table hover responsive className="mb-0">
                             <thead className="border-secondary">
                                 <tr>
                                     <th className="p-3 border-bottom-0">Order ID</th>
