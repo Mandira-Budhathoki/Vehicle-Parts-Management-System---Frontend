@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Card, Row, Col, Form, InputGroup, Button, Badge } from 'react-bootstrap';
-import { mockParts, mockUsers } from '../../services/mockApi';
+const mockUsers: any[] = []; const mockParts: any[] = []; type User = any;
 
 export const PointOfSale: React.FC = () => {
-  const [cart, setCart] = useState<{partId: string, quantity: number, name: string, price: number}[]>([]);
+  const [cart, setCart] = useState<{ partId: string, quantity: number, name: string, price: number }[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
-  
+
   const customer = mockUsers.find(u => u.name.toLowerCase().includes(customerSearch.toLowerCase()) && u.role === 'customer');
 
   const addToCart = (part: any) => {
@@ -27,15 +27,15 @@ export const PointOfSale: React.FC = () => {
                 <InputGroup.Text className="bg-transparent border-secondary text-secondary">
                   <i className="bi bi-search"></i>
                 </InputGroup.Text>
-                <Form.Control 
-                  type="text" 
-                  placeholder="Search Customer..." 
+                <Form.Control
+                  type="text"
+                  placeholder="Search Customer..."
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   className="bg-dark text-light border-secondary border-start-0 shadow-none ps-0"
                 />
               </InputGroup>
-              
+
               {customer && (
                 <div className="p-3 rounded border border-secondary mb-4 bg-secondary bg-opacity-10">
                   <div className="fw-bold mb-1">{customer.name}</div>
@@ -46,7 +46,7 @@ export const PointOfSale: React.FC = () => {
                   )}
                 </div>
               )}
-              
+
               <h5 className="mt-2 mb-3 fw-bold">Available Parts</h5>
               <div className="flex-grow-1 overflow-auto pe-2" style={{ maxHeight: 'max(400px, calc(100vh - 450px))' }}>
                 <div className="d-flex flex-column gap-3">
@@ -56,9 +56,9 @@ export const PointOfSale: React.FC = () => {
                         <div className="fw-bold">{part.name}</div>
                         <div className="small text-secondary">${part.price} | Stock: {part.stock}</div>
                       </div>
-                      <Button 
-                        variant="outline-light" 
-                        size="sm" 
+                      <Button
+                        variant="outline-light"
+                        size="sm"
                         onClick={() => addToCart(part)}
                         disabled={part.stock <= 0}
                         className="d-flex align-items-center gap-1"
@@ -77,7 +77,7 @@ export const PointOfSale: React.FC = () => {
           <Card className="bg-dark text-light border-secondary h-100 d-flex flex-column">
             <Card.Body className="d-flex flex-column">
               <h5 className="mb-4 fw-bold">Current Order</h5>
-              
+
               <div className="flex-grow-1 mb-4 overflow-auto pe-2" style={{ maxHeight: 'max(300px, calc(100vh - 450px))' }}>
                 {cart.length === 0 ? (
                   <p className="text-secondary fst-italic">Cart is empty.</p>
@@ -96,7 +96,7 @@ export const PointOfSale: React.FC = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-auto pt-4 border-top border-secondary">
                 <div className="d-flex justify-content-between mb-2">
                   <span className="text-secondary">Subtotal</span>
@@ -124,3 +124,4 @@ export const PointOfSale: React.FC = () => {
     </div>
   );
 };
+
