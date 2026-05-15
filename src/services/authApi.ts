@@ -47,7 +47,9 @@ export interface Vehicle extends VehicleData {
 // ==================== Auth ====================
 
 // Register a new customer
-export const registerCustomer = async (data: RegisterData): Promise<{ message: string }> => {
+export const registerCustomer = async (
+    data: RegisterData
+): Promise<{ message: string; userId: number }> => {
     const response = await fetch(`${API}/customer/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,7 +81,6 @@ export const loginUser = async (data: LoginData) => {
 
 // ==================== Customer Profile ====================
 
-// Get customer profile  (FIX: now sends auth token)
 export const getProfile = async (id: number): Promise<UserProfile> => {
     const response = await fetch(`${API}/customer/${id}`, {
         headers: authHeaders(),
@@ -92,8 +93,10 @@ export const getProfile = async (id: number): Promise<UserProfile> => {
     return response.json();
 };
 
-// Update customer profile  (FIX: now sends auth token)
-export const updateProfile = async (id: number, data: Partial<RegisterData>): Promise<{ message: string }> => {
+export const updateProfile = async (
+    id: number,
+    data: Partial<RegisterData>
+): Promise<{ message: string }> => {
     const response = await fetch(`${API}/customer/${id}`, {
         method: 'PUT',
         headers: authHeaders(),
@@ -109,7 +112,6 @@ export const updateProfile = async (id: number, data: Partial<RegisterData>): Pr
 
 // ==================== Vehicle API ====================
 
-// Get all vehicles for a user  (FIX: now sends auth token)
 export const getVehicles = async (userId: number): Promise<Vehicle[]> => {
     const response = await fetch(`${API}/vehicle/user/${userId}`, {
         headers: authHeaders(),
@@ -123,8 +125,10 @@ export const getVehicles = async (userId: number): Promise<Vehicle[]> => {
     return response.json();
 };
 
-// Add a vehicle for a user  (FIX: now sends auth token)
-export const addVehicle = async (userId: number, data: VehicleData): Promise<{ message: string }> => {
+export const addVehicle = async (
+    userId: number,
+    data: VehicleData
+): Promise<{ message: string }> => {
     const response = await fetch(`${API}/vehicle/${userId}`, {
         method: 'POST',
         headers: authHeaders(),
@@ -139,8 +143,10 @@ export const addVehicle = async (userId: number, data: VehicleData): Promise<{ m
     return response.json();
 };
 
-// Update a vehicle  (FIX: now sends auth token)
-export const updateVehicle = async (id: number, data: VehicleData): Promise<{ message: string }> => {
+export const updateVehicle = async (
+    id: number,
+    data: VehicleData
+): Promise<{ message: string }> => {
     const response = await fetch(`${API}/vehicle/${id}`, {
         method: 'PUT',
         headers: authHeaders(),
@@ -155,7 +161,6 @@ export const updateVehicle = async (id: number, data: VehicleData): Promise<{ me
     return response.json();
 };
 
-// Delete a vehicle  (FIX: now sends auth token)
 export const deleteVehicle = async (id: number): Promise<{ message: string }> => {
     const response = await fetch(`${API}/vehicle/${id}`, {
         method: 'DELETE',
