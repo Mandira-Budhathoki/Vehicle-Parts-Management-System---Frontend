@@ -1,127 +1,266 @@
 import React, { useState } from 'react';
-import { Card, Row, Col, Form, InputGroup, Button, Badge } from 'react-bootstrap';
-const mockUsers: any[] = []; const mockParts: any[] = []; type User = any;
+import { Card, Row, Col, Form, Button, Badge, Spinner } from 'react-bootstrap';
+import { useAuth } from '../../context/AuthContext';
+
+interface CartItem {
+    partId: number;
+    name: string;
+    price: number;
+    quantity: number;
+}
+
+interface Part {
+    partId: number;
+    partName: string;
+    price: number;
+    stockQuantity: number;
+}
 
 export const PointOfSale: React.FC = () => {
-  const [cart, setCart] = useState<{ partId: string, quantity: number, name: string, price: number }[]>([]);
-  const [customerSearch, setCustomerSearch] = useState('');
+    const { user } = useAuth();
 
-  const customer = mockUsers.find(u => u.name.toLowerCase().includes(customerSearch.toLowerCase()) && u.role === 'customer');
+    const [cart, setCart] = useState<CartItem[]>([]);
+    const [customerId, setCustomerId] = useState<number | null>(null);
+    const [loading, setLoading] = useState(false);
 
-  const addToCart = (part: any) => {
-    setCart([...cart, { partId: part.id, quantity: 1, name: part.name, price: part.price }]);
-  };
+    const [parts] = useState<Part[]>([
+        { partId: 1, partName: 'Brake Pad', price: 1200, stockQuantity: 10 },
+        { partId: 2, partName: 'Oil Filter', price: 800, stockQuantity: 15 },
+        { partId: 3, partName: 'Air Filter', price: 600, stockQuantity: 20 }
+    ]);
 
-  const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    // Add to cart
+    const addToCart = (part: Part) => {
+        setCart(prev => {
+            const existing = prev.find(i => i.partId === part.partId);
 
-  return (
-    <div className="animate-fade-in h-100 d-flex flex-column">
-      <h2 className="mb-4 text-light fw-bold">Point of Sale</h2>
+            if (existing) {
+                return prev.map(i =>
+                    i.partId === part.partId
+                        ? { ...i, quantity: i.quantity + 1 }
+                        : i
+                );
+            }
 
-      <Row className="g-4 flex-grow-1">
-        <Col xs={12} lg={7} xl={8}>
-          <Card className="bg-dark text-light border-secondary h-100 d-flex flex-column">
-            <Card.Body className="d-flex flex-column">
-              <h5 className="mb-3 fw-bold">Select Customer</h5>
-              <InputGroup className="mb-3">
-                <InputGroup.Text className="bg-transparent border-secondary text-secondary">
-                  <i className="bi bi-search"></i>
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="Search Customer..."
-                  value={customerSearch}
-                  onChange={(e) => setCustomerSearch(e.target.value)}
-                  className="bg-dark text-light border-secondary border-start-0 shadow-none ps-0"
-                />
-              </InputGroup>
+            return [
+                ...prev,
+                {
+                    partId: part.partId,
+                    name: part.partName,
+                    price: part.price,
+                    quantity: 1
+                }
+            ];
+        });
+    };
 
-              {customer && (
-                <div className="p-3 rounded border border-secondary mb-4 bg-secondary bg-opacity-10">
-                  <div className="fw-bold mb-1">{customer.name}</div>
-                  <div className="small text-secondary">{customer.email} | {customer.phone}</div>
-                  <div className="small text-secondary mb-2">Vehicle: {customer.vehicleNumber}</div>
-                  {customer.totalSpent && customer.totalSpent > 5000 && (
-                    <Badge bg="success">Loyalty Member - 10% Discount Available</Badge>
-                  )}
-                </div>
-              )}
+    const updateQty = (partId: number, qty: number) => {
+        if (qty < 1) return;
 
-              <h5 className="mt-2 mb-3 fw-bold">Available Parts</h5>
-              <div className="flex-grow-1 overflow-auto pe-2" style={{ maxHeight: 'max(400px, calc(100vh - 450px))' }}>
-                <div className="d-flex flex-column gap-3">
-                  {mockParts.map(part => (
-                    <div key={part.id} className="d-flex justify-content-between align-items-center p-3 border border-secondary rounded">
-                      <div>
-                        <div className="fw-bold">{part.name}</div>
-                        <div className="small text-secondary">${part.price} | Stock: {part.stock}</div>
-                      </div>
-                      <Button
-                        variant="outline-light"
-                        size="sm"
-                        onClick={() => addToCart(part)}
-                        disabled={part.stock <= 0}
-                        className="d-flex align-items-center gap-1"
-                      >
-                        <i className="bi bi-plus-lg"></i> Add
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
+        setCart(prev =>
+            prev.map(i =>
+                i.partId === partId ? { ...i, quantity: qty } : i
+            )
+        );
+    };
 
-        <Col xs={12} lg={5} xl={4}>
-          <Card className="bg-dark text-light border-secondary h-100 d-flex flex-column">
-            <Card.Body className="d-flex flex-column">
-              <h5 className="mb-4 fw-bold">Current Order</h5>
+    const removeItem = (partId: number) => {
+        setCart(prev => prev.filter(i => i.partId !== partId));
+    };
 
-              <div className="flex-grow-1 mb-4 overflow-auto pe-2" style={{ maxHeight: 'max(300px, calc(100vh - 450px))' }}>
-                {cart.length === 0 ? (
-                  <p className="text-secondary fst-italic">Cart is empty.</p>
-                ) : (
-                  <div className="d-flex flex-column gap-2">
-                    {cart.map((item, idx) => (
-                      <div key={idx} className="d-flex justify-content-between align-items-center p-2 rounded bg-secondary bg-opacity-10">
-                        <span className="text-truncate me-2">{item.name}</span>
-                        <div className="d-flex align-items-center gap-3 flex-shrink-0">
-                          <span className="text-secondary">x{item.quantity}</span>
-                          <span>${item.price * item.quantity}</span>
-                          <Button variant="link" className="text-danger p-0 border-0"><i className="bi bi-trash"></i></Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+    // Totals
+    const subtotal = cart.reduce((a, i) => a + i.price * i.quantity, 0);
+    const discount = subtotal > 5000 ? subtotal * 0.10 : 0;
+    const total = subtotal - discount;
 
-              <div className="mt-auto pt-4 border-top border-secondary">
-                <div className="d-flex justify-content-between mb-2">
-                  <span className="text-secondary">Subtotal</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
-                {customer?.totalSpent && customer.totalSpent > 5000 && (
-                  <div className="d-flex justify-content-between mb-2 text-success">
-                    <span>Loyalty Discount (10%)</span>
-                    <span>-${(total * 0.1).toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="d-flex justify-content-between fw-bold fs-5 mt-2 mb-4">
-                  <span>Total</span>
-                  <span>${(customer?.totalSpent && customer.totalSpent > 5000) ? (total * 0.9).toFixed(2) : total.toFixed(2)}</span>
-                </div>
-                <Button variant="primary" size="lg" className="w-100 mb-2 d-flex align-items-center justify-content-center gap-2" disabled={cart.length === 0}>
-                  <i className="bi bi-cart3"></i> Charge & Create Invoice
-                </Button>
-                <Button variant="outline-light" className="w-100">Email Invoice to Customer</Button>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </div>
-  );
+    // Checkout
+    const handleCheckout = async () => {
+        if (!customerId) {
+            alert('Please enter a Customer ID');
+            return;
+        }
+
+        if (cart.length === 0) {
+            alert('Cart is empty');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const payload = {
+                userId: customerId,
+                staffId: user?.id || 0,
+                items: cart.map(i => ({
+                    partId: i.partId,
+                    quantity: i.quantity
+                }))
+            };
+
+            const res = await fetch('/api/sales', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to create sale');
+            }
+
+            const data = await res.json();
+
+            alert(`Sale Completed!\nFinal Amount: Rs ${data.finalAmount}`);
+
+            // reset cart
+            setCart([]);
+
+        } catch (err: any) {
+            alert(err.message || 'Checkout failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="animate-fade-in">
+            <h2 className="mb-4 text-light fw-bold">Point of Sale</h2>
+
+            <Row className="g-4">
+
+                {/* LEFT */}
+                <Col lg={7}>
+                    <Card className="bg-dark text-light border-secondary">
+                        <Card.Body>
+
+                            <h5 className="mb-3">Customer ID</h5>
+
+                            <Form.Control
+                                type="number"
+                                placeholder="Enter Customer ID"
+                                value={customerId ?? ''}
+                                onChange={(e) =>
+                                    setCustomerId(e.target.value ? Number(e.target.value) : null)
+                                }
+                                className="mb-4"
+                            />
+
+                            <h5 className="mb-3">Parts</h5>
+
+                            {parts.map(part => (
+                                <div
+                                    key={part.partId}
+                                    className="d-flex justify-content-between align-items-center p-3 border border-secondary rounded mb-2"
+                                >
+                                    <div>
+                                        <div className="fw-bold">{part.partName}</div>
+                                        <small className="text-secondary">
+                                            Rs {part.price} | Stock: {part.stockQuantity}
+                                        </small>
+                                    </div>
+
+                                    <Button
+                                        size="sm"
+                                        variant="outline-light"
+                                        onClick={() => addToCart(part)}
+                                    >
+                                        Add
+                                    </Button>
+                                </div>
+                            ))}
+
+                        </Card.Body>
+                    </Card>
+                </Col>
+
+                {/* RIGHT */}
+                <Col lg={5}>
+                    <Card className="bg-dark text-light border-secondary">
+                        <Card.Body>
+
+                            <h5 className="mb-3">Cart</h5>
+
+                            {cart.length === 0 ? (
+                                <p className="text-secondary">Cart is empty</p>
+                            ) : (
+                                cart.map(item => (
+                                    <div
+                                        key={item.partId}
+                                        className="d-flex justify-content-between align-items-center mb-2"
+                                    >
+                                        <div>
+                                            <div>{item.name}</div>
+                                            <small>Rs {item.price}</small>
+                                        </div>
+
+                                        <div className="d-flex align-items-center gap-2">
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={item.quantity}
+                                                onChange={(e) =>
+                                                    updateQty(item.partId, Number(e.target.value))
+                                                }
+                                                style={{ width: 60 }}
+                                            />
+
+                                            <Button
+                                                size="sm"
+                                                variant="danger"
+                                                onClick={() => removeItem(item.partId)}
+                                            >
+                                                X
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+
+                            <hr />
+
+                            <div className="d-flex justify-content-between">
+                                <span>Subtotal</span>
+                                <span>Rs {subtotal}</span>
+                            </div>
+
+                            <div className="d-flex justify-content-between text-success">
+                                <span>Discount</span>
+                                <span>- Rs {discount}</span>
+                            </div>
+
+                            <div className="d-flex justify-content-between fw-bold fs-5">
+                                <span>Total</span>
+                                <span>Rs {total}</span>
+                            </div>
+
+                            {subtotal > 5000 && (
+                                <Badge bg="success" className="mt-2">
+                                    10% Loyalty Discount Applied
+                                </Badge>
+                            )}
+
+                            <Button
+                                className="w-100 mt-3"
+                                onClick={handleCheckout}
+                                disabled={loading || cart.length === 0}
+                            >
+                                {loading ? (
+                                    <>
+                                        <Spinner size="sm" className="me-2" />
+                                        Processing...
+                                    </>
+                                ) : (
+                                    'Checkout'
+                                )}
+                            </Button>
+
+                        </Card.Body>
+                    </Card>
+                </Col>
+
+            </Row>
+        </div>
+    );
 };
-
