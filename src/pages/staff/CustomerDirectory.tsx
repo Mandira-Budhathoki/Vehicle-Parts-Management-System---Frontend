@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, Form, InputGroup, Row, Col, Button, Badge, Modal, Nav, Spinner, Table } from 'react-bootstrap';
 import { getAllCustomers, getCustomerFullProfile, type CustomerResponse, type CustomerFullProfile } from '../../services/authApi';
 import { useToast } from '../../context/ToastContext';
@@ -7,9 +8,18 @@ type ProfileTab = 'details' | 'vehicles' | 'sales' | 'appointments' | 'requests'
 
 export const CustomerDirectory: React.FC = () => {
   const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
   const [customers, setCustomers] = useState<CustomerResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+
+  // Sync search state with URL query parameter changes
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q !== null) {
+      setSearch(q);
+    }
+  }, [searchParams]);
 
   // Profile Modal State
   const [showModal, setShowModal] = useState(false);
@@ -56,6 +66,7 @@ export const CustomerDirectory: React.FC = () => {
   // Filter customers based on search
   const filteredCustomers = customers.filter(c => {
     const term = search.toLowerCase();
+    const matchesId = c.userId.toString().includes(term);
     const matchesName = c.name.toLowerCase().includes(term);
     const matchesEmail = c.email.toLowerCase().includes(term);
     const matchesPhone = c.phone?.includes(term);
@@ -64,7 +75,7 @@ export const CustomerDirectory: React.FC = () => {
       v.brand.toLowerCase().includes(term) || 
       v.model.toLowerCase().includes(term)
     );
-    return matchesName || matchesEmail || matchesPhone || matchesVehicle;
+    return matchesId || matchesName || matchesEmail || matchesPhone || matchesVehicle;
   });
 
   const getStatusBadge = (status: string) => {
@@ -96,7 +107,7 @@ export const CustomerDirectory: React.FC = () => {
             </InputGroup.Text>
             <Form.Control
               type="text"
-              placeholder="Search by name, email, phone, vehicle number, model, brand..."
+              placeholder="Search by ID, name, email, phone, vehicle number, brand..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="bg-white text-dark border-light-subtle border-start-0 shadow-none ps-0"
