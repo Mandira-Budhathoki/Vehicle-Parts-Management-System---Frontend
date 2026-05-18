@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Form, Row, Col, Button, Alert, Spinner } from 'react-bootstrap';
+import { Card, Form, Row, Col, Button, Alert, Spinner, InputGroup } from 'react-bootstrap';
 import { registerCustomer, addVehicle } from '../../services/authApi';
 
 export const CustomerRegistration: React.FC = () => {
@@ -7,12 +7,14 @@ export const CustomerRegistration: React.FC = () => {
     name: '',
     phone: '',
     email: '',
+    password: '',
     vehicleModel: '',
     vehicleBrand: '',
     vehicleYear: new Date().getFullYear().toString(),
     vehicleNumber: '',
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,16 +29,21 @@ export const CustomerRegistration: React.FC = () => {
     setSuccess(null);
     setError(null);
 
+    const registeredEmail = formData.email;
+    const registeredPassword = formData.password;
+
     try {
-      // 1. Register the Customer
+      // 1. Register the Customer (using the custom password provided)
       const registerRes = await registerCustomer({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        password: 'Password123!', // Default password for walk-in customers
+        password: formData.password,
       });
 
-      const newUserId = registerRes.userId;
+      console.log('Customer registration response:', registerRes);
+
+      const newUserId = registerRes.userId || (registerRes as any).UserId || (registerRes as any).id || (registerRes as any).Id;
 
       // 2. Register the Vehicle linked to the new Customer
       await addVehicle(newUserId, {
@@ -46,18 +53,20 @@ export const CustomerRegistration: React.FC = () => {
         year: parseInt(formData.vehicleYear),
       });
 
-      setSuccess('Customer and Vehicle successfully registered!');
+      setSuccess(`Customer and Vehicle successfully registered! (Login Email: ${registeredEmail})`);
       
       // Clear form
       setFormData({
         name: '',
         phone: '',
         email: '',
+        password: '',
         vehicleModel: '',
         vehicleBrand: '',
         vehicleYear: new Date().getFullYear().toString(),
         vehicleNumber: '',
       });
+      setShowPassword(false);
     } catch (err: any) {
       setError(err.message || 'Failed to register customer. Please check the details.');
     } finally {
@@ -93,10 +102,37 @@ export const CustomerRegistration: React.FC = () => {
               </Col>
             </Row>
             
-            <Form.Group className="mb-4">
-              <Form.Label className="text-secondary">Email Address <span className="text-danger">*</span></Form.Label>
-              <Form.Control required name="email" value={formData.email} onChange={handleChange} type="email" placeholder="jane@example.com" className="bg-dark text-light border-secondary shadow-none" />
-            </Form.Group>
+            <Row className="g-3 mb-4">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="text-secondary">Email Address <span className="text-danger">*</span></Form.Label>
+                  <Form.Control required name="email" value={formData.email} onChange={handleChange} type="email" placeholder="jane@example.com" className="bg-dark text-light border-secondary shadow-none" />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="text-secondary">Password <span className="text-danger">*</span></Form.Label>
+                  <InputGroup>
+                    <Form.Control 
+                      required 
+                      name="password" 
+                      value={formData.password} 
+                      onChange={handleChange} 
+                      type={showPassword ? "text" : "password"} 
+                      placeholder="Set login password" 
+                      className="bg-dark text-light border-secondary shadow-none" 
+                    />
+                    <Button 
+                      variant="outline-secondary" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="border-secondary text-secondary bg-dark shadow-none"
+                    >
+                      <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                    </Button>
+                  </InputGroup>
+                </Form.Group>
+              </Col>
+            </Row>
 
             <h5 className="mt-4 mb-3 pt-4 border-top border-secondary fw-bold">Vehicle Information</h5>
             <Row className="g-3 mb-3">
