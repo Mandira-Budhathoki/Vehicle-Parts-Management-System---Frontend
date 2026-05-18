@@ -6,6 +6,7 @@ const API = '/api';
 
 const authHeaders = () => {
     const token = localStorage.getItem('token');
+
     return {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -57,7 +58,10 @@ export const registerCustomer = async (
     });
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Registration failed' }));
+        const error = await response
+            .json()
+            .catch(() => ({ message: 'Registration failed' }));
+
         throw new Error(error.message || 'Registration failed');
     }
 
@@ -81,6 +85,7 @@ export const loginUser = async (data: LoginData) => {
 
 // ==================== Customer Profile ====================
 
+// Get customer profile
 export const getProfile = async (id: number): Promise<UserProfile> => {
     const response = await fetch(`${API}/customer/${id}`, {
         headers: authHeaders(),
@@ -93,6 +98,20 @@ export const getProfile = async (id: number): Promise<UserProfile> => {
     return response.json();
 };
 
+// Get all customers
+export const getCustomers = async (): Promise<UserProfile[]> => {
+    const response = await fetch(`${API}/customer`, {
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch customers');
+    }
+
+    return response.json();
+};
+
+// Update customer profile
 export const updateProfile = async (
     id: number,
     data: Partial<RegisterData>
@@ -112,19 +131,26 @@ export const updateProfile = async (
 
 // ==================== Vehicle API ====================
 
-export const getVehicles = async (userId: number): Promise<Vehicle[]> => {
+// Get vehicles for a user
+export const getVehicles = async (
+    userId: number
+): Promise<Vehicle[]> => {
     const response = await fetch(`${API}/vehicle/user/${userId}`, {
         headers: authHeaders(),
     });
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to fetch vehicles' }));
+        const error = await response
+            .json()
+            .catch(() => ({ message: 'Failed to fetch vehicles' }));
+
         throw new Error(error.message || 'Failed to fetch vehicles');
     }
 
     return response.json();
 };
 
+// Add vehicle
 export const addVehicle = async (
     userId: number,
     data: VehicleData
@@ -136,13 +162,17 @@ export const addVehicle = async (
     });
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to add vehicle' }));
+        const error = await response
+            .json()
+            .catch(() => ({ message: 'Failed to add vehicle' }));
+
         throw new Error(error.message || 'Failed to add vehicle');
     }
 
     return response.json();
 };
 
+// Update vehicle
 export const updateVehicle = async (
     id: number,
     data: VehicleData
@@ -154,21 +184,30 @@ export const updateVehicle = async (
     });
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to update vehicle' }));
+        const error = await response
+            .json()
+            .catch(() => ({ message: 'Failed to update vehicle' }));
+
         throw new Error(error.message || 'Failed to update vehicle');
     }
 
     return response.json();
 };
 
-export const deleteVehicle = async (id: number): Promise<{ message: string }> => {
+// Delete vehicle
+export const deleteVehicle = async (
+    id: number
+): Promise<{ message: string }> => {
     const response = await fetch(`${API}/vehicle/${id}`, {
         method: 'DELETE',
         headers: authHeaders(),
     });
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to delete vehicle' }));
+        const error = await response
+            .json()
+            .catch(() => ({ message: 'Failed to delete vehicle' }));
+
         throw new Error(error.message || 'Failed to delete vehicle');
     }
 
