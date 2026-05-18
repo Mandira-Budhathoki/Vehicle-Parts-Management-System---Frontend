@@ -78,6 +78,17 @@ export const getProfile = async (id: number): Promise<UserProfile> => {
   return response.json();
 };
 
+// Get all customers
+export const getCustomers = async (): Promise<UserProfile[]> => {
+    const response = await fetch(`${API}/customer`);
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch customers');
+    }
+
+    return response.json();
+};
+
 // Update customer profile
 export const updateProfile = async (id: number, data: Partial<RegisterData>): Promise<{ message: string }> => {
     const response = await fetch(`${API}/customer/${id}`, {
