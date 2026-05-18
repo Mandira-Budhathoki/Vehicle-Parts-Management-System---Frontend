@@ -20,11 +20,5 @@ export default defineConfig({
       },
     },
   },
-  resolve: {
-    alias: {
-      'react-aria/SSRProvider': '/src/shims/react-aria-ssr.tsx',
-      'react-aria/private/ssr/SSRProvider': '/src/shims/react-aria-ssr.tsx',
-    },
-  },
 })
 

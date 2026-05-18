@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col, Card, Button, Alert } from 'react-bootstrap';
-const mockUsers: any[] = []; const mockParts: any[] = []; type User = any;
+const mockParts: any[] = [];
 
 export const AdminDashboard: React.FC = () => {
   const lowStockParts = mockParts.filter(p => p.stock < 10);

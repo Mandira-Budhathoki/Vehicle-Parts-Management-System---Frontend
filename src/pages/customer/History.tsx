@@ -207,7 +207,7 @@ export const History: React.FC = () => {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Rating (1–5)</Form.Label>
+                            <Form.Label>Rating (1â€“5)</Form.Label>
                             <div className="d-flex gap-2">
                                 {[1, 2, 3, 4, 5].map(n => (
                                     <Button

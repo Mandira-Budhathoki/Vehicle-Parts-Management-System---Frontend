@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Row, Col, Form, InputGroup, Button, Badge } from 'react-bootstrap';
-const mockUsers: any[] = []; const mockParts: any[] = []; type User = any;
+const mockUsers: any[] = []; const mockParts: any[] = [];
 
 export const PointOfSale: React.FC = () => {
   const [cart, setCart] = useState<{ partId: string, quantity: number, name: string, price: number }[]>([]);

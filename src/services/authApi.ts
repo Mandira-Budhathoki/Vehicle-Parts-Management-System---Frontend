@@ -174,3 +174,48 @@ export const deleteVehicle = async (id: number): Promise<{ message: string }> =>
 
     return response.json();
 };
+
+// ==================== Customer Directory & Full Profile API ====================
+
+export interface CustomerResponse {
+    userId: number;
+    name: string;
+    email: string;
+    phone: string;
+    vehicles: Vehicle[];
+}
+
+export interface CustomerFullProfile {
+    userId: number;
+    name: string;
+    email: string;
+    phone: string;
+    vehicles: Vehicle[];
+    salesHistory: any[];
+    appointments: any[];
+    partRequests: any[];
+}
+
+export const getAllCustomers = async (): Promise<CustomerResponse[]> => {
+    const response = await fetch(`${API}/customer`, {
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch customers');
+    }
+
+    return response.json();
+};
+
+export const getCustomerFullProfile = async (id: number): Promise<CustomerFullProfile> => {
+    const response = await fetch(`${API}/customer/${id}/full-profile`, {
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch full customer profile');
+    }
+
+    return response.json();
+};

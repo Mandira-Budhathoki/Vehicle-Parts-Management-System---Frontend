@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-    Row, Col, Card, Table, Badge, Button, Spinner,
+    Card, Table, Badge, Button, Spinner,
     Modal, Nav, OverlayTrigger, Tooltip
 } from 'react-bootstrap';
 import { reportsApi, type RegularCustomer, type HighSpender, type PendingCredit } from '../../services/ReportsApi';
@@ -13,7 +13,6 @@ interface ModalState {
     title: string;
     rows: { label: string; value: React.ReactNode }[];
 }
-const mockUsers: any[] = []; const mockParts: any[] = []; type User = any;
 
 export const StaffReports: React.FC = () => {
     const { showToast } = useToast();
@@ -365,12 +364,9 @@ export const StaffReports: React.FC = () => {
     );
 };
 
-<<<<<<< HEAD
 const EmptyState: React.FC<{ message: string; icon: string }> = ({ message, icon }) => (
     <div className="text-center py-5 text-secondary">
         <i className={`bi ${icon} fs-1 mb-3 d-block`}></i>
         <p className="mb-0">{message}</p>
     </div>
 );
-=======
->>>>>>> FEATURE_3_FRONTEND_PARTS_MANAGEMENT
