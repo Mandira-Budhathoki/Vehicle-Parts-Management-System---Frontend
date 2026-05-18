@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ï»¿import React, { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Spinner, Modal, Form } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -207,7 +207,7 @@ export const History: React.FC = () => {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Rating (1–5)</Form.Label>
+                            <Form.Label>Rating (1ï¿½5)</Form.Label>
                             <div className="d-flex gap-2">
                                 {[1, 2, 3, 4, 5].map(n => (
                                     <Button
