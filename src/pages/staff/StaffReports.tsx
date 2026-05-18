@@ -1,9 +1,9 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     Card, Table, Badge, Button, Spinner,
     Modal, Nav, OverlayTrigger, Tooltip
 } from 'react-bootstrap';
-import { reportsApi, type RegularCustomer, type HighSpender, type PendingCredit } from '../../services/reportsApi';
+import { reportsApi, type RegularCustomer, type HighSpender, type PendingCredit } from '../../services/ReportsApi';
 import { useToast } from '../../context/ToastContext';
 
 type ActiveTab = 'regulars' | 'highSpenders' | 'pendingCredits';

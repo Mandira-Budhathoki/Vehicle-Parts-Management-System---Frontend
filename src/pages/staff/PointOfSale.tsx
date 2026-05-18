@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Form, InputGroup, Button, Badge, Spinner, Alert } from 'react-bootstrap';
+import { Card, Row, Col, Form, Button, Spinner, Alert } from 'react-bootstrap';
 import { getCustomers, type UserProfile } from '../../services/authApi';
 import { getAllParts, type Part } from '../../services/partApi';
 import { createSalesInvoice } from '../../services/salesApi';

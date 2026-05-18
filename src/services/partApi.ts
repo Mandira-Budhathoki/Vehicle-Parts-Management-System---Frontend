@@ -3,12 +3,12 @@ const API_BASE = '/api/parts';
 export interface Part {
   partId: number;
   partName: string;
-  categoryId: number;
-  categoryName: string;
-  vendorId: number;
+  category: string;
+  description: string;
   price: number;
   stockQuantity: number;
-  imageUrl?: string;
+  reorderLevel: number;
+  vendorId?: number | null;
 }
 
 const getAuthHeaders = () => {
