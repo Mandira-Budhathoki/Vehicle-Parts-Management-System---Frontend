@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Form, Button, Spinner, Alert } from 'react-bootstrap';
+import { Card, Row, Col, Form, Button, Spinner, Alert, Modal, Table } from 'react-bootstrap';
 import { getCustomers, type UserProfile } from '../../services/authApi';
 import { getAllParts, type Part } from '../../services/partApi';
 import { createSalesInvoice } from '../../services/salesApi';
@@ -16,6 +16,8 @@ export const PointOfSale: React.FC = () => {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [createdInvoice, setCreatedInvoice] = useState<any>(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,8 +93,10 @@ export const PointOfSale: React.FC = () => {
         salesItems: cart.map(c => ({ partId: c.partId, quantity: c.quantity }))
       };
 
-      await createSalesInvoice(payload);
+      const res = await createSalesInvoice(payload);
       
+      setCreatedInvoice(res);
+      setShowInvoiceModal(true);
       setSuccess('Invoice created successfully! Stock has been updated.');
       setCart([]);
       setSelectedCustomerId('');
@@ -137,7 +141,7 @@ export const PointOfSale: React.FC = () => {
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value ? Number(e.target.value) : '')}
               >
-                <option value="" className="text-dark">-- Choose a Customer --</option>
+                <option value="" className="text-dark">▼ Choose a Customer --</option>
                 {customers.map(c => (
                   <option key={c.userId} value={c.userId} className="text-dark">
                     {c.name} ({c.phone || c.email})
@@ -254,6 +258,108 @@ export const PointOfSale: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Invoice Modal */}
+      <Modal show={showInvoiceModal} onHide={() => setShowInvoiceModal(false)} size="lg" centered>
+        <Modal.Header closeButton className="bg-dark text-white border-secondary">
+          <Modal.Title className="fw-bold">
+            <i className="bi bi-receipt me-2"></i>Sales Invoice Generated
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="bg-light p-5 text-dark" id="printable-invoice">
+          {createdInvoice && (
+            <div className="invoice-container">
+              {/* Header Section */}
+              <div className="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom border-secondary">
+                <div>
+                  <h3 className="fw-bold text-primary mb-1">VP SYSTEM</h3>
+                  <div className="text-secondary small">Vehicle Parts Management System</div>
+                </div>
+                <div className="text-end">
+                  <h4 className="fw-bold mb-0">SALES INVOICE</h4>
+                  <div className="text-secondary small">Invoice #{createdInvoice.salesId}</div>
+                  <div className="text-secondary small">Date: {new Date(createdInvoice.date).toLocaleDateString()}</div>
+                </div>
+              </div>
+
+              {/* Bill To & Details */}
+              <Row className="mb-4">
+                <Col sm={6}>
+                  <div className="text-secondary small text-uppercase fw-bold mb-2">Billed To</div>
+                  <div className="fw-bold fs-5 mb-1">{createdInvoice.customerName}</div>
+                  {matchedCustomer && (
+                    <div className="text-secondary small">
+                      {matchedCustomer.email && <div><i className="bi bi-envelope me-1"></i> {matchedCustomer.email}</div>}
+                      {matchedCustomer.phone && <div><i className="bi bi-telephone me-1"></i> {matchedCustomer.phone}</div>}
+                    </div>
+                  )}
+                </Col>
+                <Col sm={6} className="text-end">
+                  <div className="text-secondary small text-uppercase fw-bold mb-2">Transaction Details</div>
+                  <div className="text-secondary small">Payment Status: <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">{createdInvoice.paymentStatus || 'Completed'}</span></div>
+                  <div className="text-secondary small mt-1">Processed By: Staff member</div>
+                </Col>
+              </Row>
+
+              {/* Items Table */}
+              <Table responsive className="mb-4 border border-secondary border-opacity-25">
+                <thead style={{ background: 'rgba(99,102,241,0.05)' }}>
+                  <tr>
+                    <th className="fw-bold text-primary">Item Description</th>
+                    <th className="text-end fw-bold text-primary">Unit Price</th>
+                    <th className="text-center fw-bold text-primary">Qty</th>
+                    <th className="text-end fw-bold text-primary">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {createdInvoice.salesItems && createdInvoice.salesItems.map((item: any) => (
+                    <tr key={item.salesItemId}>
+                      <td>
+                        <div className="fw-bold text-dark">{item.partName}</div>
+                      </td>
+                      <td className="text-end text-dark">Rs. {item.price.toLocaleString()}</td>
+                      <td className="text-center text-dark">{item.quantity}</td>
+                      <td className="text-end fw-semibold text-dark">Rs. {item.subtotal.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+
+              {/* Total Calculation */}
+              <Row className="justify-content-end mb-4">
+                <Col sm={6} md={5} className="text-end">
+                  <div className="d-flex justify-content-between mb-2">
+                    <span className="text-secondary">Subtotal:</span>
+                    <span className="fw-semibold text-dark">Rs. {createdInvoice.totalAmount.toLocaleString()}</span>
+                  </div>
+                  {createdInvoice.discount > 0 && (
+                    <div className="d-flex justify-content-between mb-2 text-success">
+                      <span>Loyalty Discount:</span>
+                      <span>-Rs. {createdInvoice.discount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="d-flex justify-content-between border-top border-secondary pt-2 fw-bold fs-5 mt-2">
+                    <span className="text-primary">Total Paid:</span>
+                    <span className="text-dark">Rs. {createdInvoice.finalAmount.toLocaleString()}</span>
+                  </div>
+                </Col>
+              </Row>
+
+              {/* Footer Note */}
+              <div className="text-center text-secondary small mt-5 pt-4 border-top border-secondary border-opacity-25">
+                <p className="mb-1 fw-semibold">Thank you for your visit!</p>
+                <p className="text-muted mb-0">For support, email us at support@vpsystem.com</p>
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="bg-dark border-secondary">
+          <Button variant="secondary" onClick={() => setShowInvoiceModal(false)}>Close</Button>
+          <Button variant="primary" onClick={() => window.print()} className="d-flex align-items-center gap-2">
+            <i className="bi bi-printer-fill"></i> Print Invoice
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
