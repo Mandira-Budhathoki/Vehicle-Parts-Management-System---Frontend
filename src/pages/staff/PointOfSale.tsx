@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Card,
-    Row,
-    Col,
-    Form,
-    Button,
-    Spinner,
-    Alert,
-    Modal,
-    Table,
-    Badge
+    Card, Row, Col, Form, Button, Spinner,
+    Alert, Modal, Table, Badge, InputGroup
 } from 'react-bootstrap';
-
 import { getCustomers, type UserProfile } from '../../services/authApi';
 import { getAllParts, type Part } from '../../services/partApi';
-import { createSalesInvoice } from '../../services/salesApi';
+import { createSalesInvoice, type SalesInvoice } from '../../services/salesApi';
+import { sendInvoiceEmail } from '../../services/emailApi';
 import { useAuth } from '../../context/AuthContext';
 
 export const PointOfSale: React.FC = () => {
@@ -39,11 +31,15 @@ export const PointOfSale: React.FC = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    const [createdInvoice, setCreatedInvoice] = useState<any>(null);
+    const [createdInvoice, setCreatedInvoice] = useState<SalesInvoice | null>(null);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
+    const [emailAddress, setEmailAddress] = useState('');
+    const [sendingEmail, setSendingEmail] = useState(false);
+    const [emailResult, setEmailResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
     useEffect(() => {
-        const fetchData = async () => {
+        (async () => {
             try {
                 const [customersData, partsData] = await Promise.all([
                     getCustomers(),
@@ -52,14 +48,13 @@ export const PointOfSale: React.FC = () => {
 
                 setCustomers(customersData);
                 setParts(partsData);
-            } catch (err) {
+
+            } catch {
                 setError('Failed to load initial data.');
             } finally {
                 setLoading(false);
             }
-        };
-
-        fetchData();
+        })();
     }, []);
 
     const matchedCustomer = selectedCustomerId
@@ -122,11 +117,15 @@ export const PointOfSale: React.FC = () => {
         0
     );
 
+    // Loyalty logic aligned with backend
     const isLoyaltyEligible = matchedCustomer
-        ? (matchedCustomer.totalSpent || 0) + total >= 5000
+        ? ((matchedCustomer.totalSpent || 0) + total) >= 5000
         : false;
 
-    const discountAmount = isLoyaltyEligible ? total * 0.10 : 0;
+    const discountAmount = isLoyaltyEligible
+        ? total * 0.10
+        : 0;
+
     const finalAmount = total - discountAmount;
 
     const handleCharge = async () => {
@@ -145,18 +144,20 @@ export const PointOfSale: React.FC = () => {
         setSuccess('');
 
         try {
-            const payload = {
+            const invoice = await createSalesInvoice({
                 userId: matchedCustomer.userId,
                 staffId: user ? Number(user.id) : 1,
                 salesItems: cart.map(c => ({
                     partId: c.partId,
                     quantity: c.quantity
                 }))
-            };
+            });
 
-            const res = await createSalesInvoice(payload);
+            setCreatedInvoice(invoice);
 
-            setCreatedInvoice(res);
+            setEmailAddress(matchedCustomer.email ?? '');
+            setEmailResult(null);
+
             setShowInvoiceModal(true);
 
             setSuccess('Invoice created successfully!');
@@ -167,11 +168,64 @@ export const PointOfSale: React.FC = () => {
             const updatedParts = await getAllParts();
             setParts(updatedParts);
 
-        } catch (err: any) {
-            setError(err.message || 'Failed to create invoice.');
+        } catch (err: unknown) {
+            const msg = err instanceof Error
+                ? err.message
+                : 'Failed to create invoice.';
+
+            setError(msg);
+
         } finally {
             setProcessing(false);
         }
+    };
+
+    const handleSendEmail = async () => {
+        if (!createdInvoice) return;
+
+        if (!emailAddress.trim()) {
+            setEmailResult({
+                ok: false,
+                msg: 'Please enter a valid email address.'
+            });
+
+            return;
+        }
+
+        setSendingEmail(true);
+        setEmailResult(null);
+
+        try {
+            const res = await sendInvoiceEmail({
+                salesId: createdInvoice.salesId,
+                customerEmail: emailAddress.trim()
+            });
+
+            setEmailResult({
+                ok: true,
+                msg: res.message
+            });
+
+        } catch (err: unknown) {
+            const msg = err instanceof Error
+                ? err.message
+                : 'Failed to send email.';
+
+            setEmailResult({
+                ok: false,
+                msg
+            });
+
+        } finally {
+            setSendingEmail(false);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setShowInvoiceModal(false);
+        setCreatedInvoice(null);
+        setEmailResult(null);
+        setEmailAddress('');
     };
 
     if (loading) {
@@ -452,6 +506,7 @@ export const PointOfSale: React.FC = () => {
                                 {discountAmount > 0 && (
                                     <div className="d-flex justify-content-between text-success mb-2">
                                         <span>Loyalty Discount (10%)</span>
+
                                         <span>
                                             - Rs. {discountAmount.toLocaleString()}
                                         </span>
@@ -502,87 +557,259 @@ export const PointOfSale: React.FC = () => {
             {/* INVOICE MODAL */}
             <Modal
                 show={showInvoiceModal}
-                onHide={() => setShowInvoiceModal(false)}
+                onHide={handleCloseModal}
                 size="lg"
                 centered
             >
-                <Modal.Header closeButton>
-                    <Modal.Title>
-                        Invoice Generated
+                <Modal.Header
+                    closeButton
+                    className="border-0 pb-0"
+                    style={{
+                        background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                        borderRadius: '8px 8px 0 0'
+                    }}
+                >
+                    <Modal.Title className="fw-bold text-white">
+                        <i className="bi bi-receipt me-2"></i>
+                        Invoice Preview
                     </Modal.Title>
                 </Modal.Header>
 
-                <Modal.Body>
+                <Modal.Body className="px-4 pt-4" style={{ background: '#ffffff' }}>
 
                     {createdInvoice && (
-                        <div>
+                        <>
 
-                            <h4 className="mb-4">
-                                Invoice #{createdInvoice.salesId}
-                            </h4>
+                            <div
+                                className="d-flex justify-content-between align-items-start mb-3 p-3 rounded"
+                                style={{ background: '#f8f9fa' }}
+                            >
+                                <div>
+                                    <div className="text-secondary small">Customer</div>
+                                    <div className="fw-bold text-dark">
+                                        {createdInvoice.customerName}
+                                    </div>
+                                </div>
 
-                            <Table bordered>
+                                <div className="text-end">
+                                    <div className="text-secondary small">Invoice</div>
 
+                                    <div className="fw-bold text-dark">
+                                        #{createdInvoice.salesId.toString().padStart(6, '0')}
+                                    </div>
+
+                                    <div className="text-secondary small">
+                                        {new Date(createdInvoice.date).toLocaleDateString()}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <Table bordered size="sm" className="mb-3">
                                 <thead>
                                     <tr>
-                                        <th>Part</th>
-                                        <th>Qty</th>
-                                        <th>Price</th>
-                                        <th>Subtotal</th>
+                                        <th style={{ background: '#6366f1', color: '#fff' }}>
+                                            Part
+                                        </th>
+
+                                        <th
+                                            className="text-center"
+                                            style={{ background: '#6366f1', color: '#fff' }}
+                                        >
+                                            Qty
+                                        </th>
+
+                                        <th
+                                            className="text-end"
+                                            style={{ background: '#6366f1', color: '#fff' }}
+                                        >
+                                            Unit Price
+                                        </th>
+
+                                        <th
+                                            className="text-end"
+                                            style={{ background: '#6366f1', color: '#fff' }}
+                                        >
+                                            Subtotal
+                                        </th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
 
-                                    {createdInvoice.salesItems?.map((item: any) => (
+                                    {createdInvoice.salesItems?.map(item => (
                                         <tr key={item.salesItemId}>
                                             <td>{item.partName}</td>
-                                            <td>{item.quantity}</td>
-                                            <td>Rs. {item.price}</td>
-                                            <td>Rs. {item.subtotal}</td>
+                                            <td className="text-center">{item.quantity}</td>
+
+                                            <td className="text-end">
+                                                Rs. {item.price.toLocaleString()}
+                                            </td>
+
+                                            <td className="text-end">
+                                                Rs. {item.subtotal.toLocaleString()}
+                                            </td>
                                         </tr>
                                     ))}
 
                                 </tbody>
-
                             </Table>
 
-                            <div className="text-end mt-4">
+                            <div
+                                className="text-end mb-4 p-3 rounded"
+                                style={{ background: '#f8f9fa' }}
+                            >
+                                <div className="text-muted small">
+                                    Subtotal:
+                                    <strong>
+                                        {' '}Rs. {createdInvoice.totalAmount.toLocaleString()}
+                                    </strong>
+                                </div>
 
-                                <h6>
-                                    Subtotal: Rs. {createdInvoice.totalAmount}
-                                </h6>
                                 {createdInvoice.discount > 0 && (
-                                    <h6 className="text-success mb-2">
-                                        Loyalty Discount (10%): - Rs. {createdInvoice.discount}
-                                    </h6>
+                                    <div className="text-success small">
+                                        Loyalty Discount:
+                                        <strong>
+                                            {' '}- Rs. {createdInvoice.discount.toLocaleString()}
+                                        </strong>
+                                    </div>
                                 )}
-                                <h4 className="mt-3 text-primary">
-                                    Total: Rs. {createdInvoice.finalAmount}
-                                </h4>
 
+                                <div
+                                    className="fw-bold fs-5 mt-1"
+                                    style={{ color: '#6366f1' }}
+                                >
+                                    Total Due:
+                                    {' '}Rs. {createdInvoice.finalAmount.toLocaleString()}
+                                </div>
+
+                                <Badge
+                                    className="mt-1"
+                                    bg={
+                                        createdInvoice.paymentStatus === 'Completed'
+                                            ? 'success'
+                                            : 'warning'
+                                    }
+                                >
+                                    {createdInvoice.paymentStatus.toUpperCase()}
+                                </Badge>
                             </div>
 
-                        </div>
+                            <div
+                                className="p-3 rounded"
+                                style={{
+                                    background: '#f0f0ff',
+                                    border: '1px solid #c7c9f9'
+                                }}
+                            >
+                                <h6
+                                    className="fw-bold mb-2"
+                                    style={{ color: '#6366f1' }}
+                                >
+                                    <i className="bi bi-envelope me-2"></i>
+                                    Email Invoice to Customer
+                                </h6>
+
+                                <InputGroup className="mb-2">
+
+                                    <InputGroup.Text
+                                        style={{
+                                            background: '#6366f1',
+                                            color: '#fff',
+                                            border: 'none'
+                                        }}
+                                    >
+                                        <i className="bi bi-at"></i>
+                                    </InputGroup.Text>
+
+                                    <Form.Control
+                                        type="email"
+                                        placeholder="customer@example.com"
+                                        value={emailAddress}
+                                        onChange={e => {
+                                            setEmailAddress(e.target.value);
+                                            setEmailResult(null);
+                                        }}
+                                        style={{
+                                            border: '1px solid #c7c9f9'
+                                        }}
+                                    />
+
+                                    <Button
+                                        onClick={handleSendEmail}
+                                        disabled={sendingEmail}
+                                        style={{
+                                            background: '#6366f1',
+                                            border: 'none',
+                                            minWidth: '90px',
+                                            color: '#fff'
+                                        }}
+                                    >
+                                        {sendingEmail ? (
+                                            <Spinner animation="border" size="sm" />
+                                        ) : (
+                                            <>
+                                                <i className="bi bi-send me-1"></i>
+                                                Send
+                                            </>
+                                        )}
+                                    </Button>
+
+                                </InputGroup>
+
+                                {emailResult && (
+                                    <Alert
+                                        variant={emailResult.ok ? 'success' : 'danger'}
+                                        className="mb-0 py-2 px-3"
+                                    >
+                                        <i
+                                            className={`bi ${emailResult.ok
+                                                    ? 'bi-check-circle'
+                                                    : 'bi-exclamation-triangle'
+                                                } me-2`}
+                                        ></i>
+
+                                        {emailResult.msg}
+                                    </Alert>
+                                )}
+                            </div>
+
+                        </>
                     )}
 
                 </Modal.Body>
 
-                <Modal.Footer>
+                <Modal.Footer
+                    style={{
+                        background: '#f8f9fa',
+                        borderTop: '1px solid #dee2e6'
+                    }}
+                >
                     <Button
-                        variant="secondary"
-                        onClick={() => setShowInvoiceModal(false)}
+                        onClick={() => window.print()}
+                        style={{
+                            background: '#374151',
+                            border: 'none',
+                            color: '#fff',
+                            minWidth: '90px'
+                        }}
                     >
-                        Close
+                        <i className="bi bi-printer me-1"></i>
+                        Print
                     </Button>
 
                     <Button
-                        variant="primary"
-                        onClick={() => window.print()}
+                        onClick={handleCloseModal}
+                        style={{
+                            background: '#6b7280',
+                            border: 'none',
+                            color: '#fff',
+                            minWidth: '90px'
+                        }}
                     >
-                        Print
+                        Close
                     </Button>
                 </Modal.Footer>
+
             </Modal>
         </div>
     );

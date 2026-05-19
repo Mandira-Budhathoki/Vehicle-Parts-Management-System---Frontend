@@ -13,8 +13,8 @@ export const getNotifications = async (): Promise<AppNotification[]> => {
     return response.data;
 };
 
-export const markAsRead = async (id: number): Promise<void> => {
-    await api.put(`/notification/${id}/read`);
+export const markAsRead = async (notificationId: number): Promise<void> => {
+    await api.put(`/notification/${notificationId}/read`);
 };
 
 export const markAllAsRead = async (): Promise<void> => {
