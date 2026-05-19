@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+ï»¿import React, { useState, useEffect, useCallback } from 'react';
 import {
     Card, Table, Badge, Button, Spinner, ButtonGroup, Alert
 } from 'react-bootstrap';
@@ -171,7 +171,7 @@ export const StaffAppointments: React.FC = () => {
                                         </td>
                                         <td className="px-3 py-3">
                                             <span className="text-secondary small fst-italic">
-                                                {a.notes || '—'}
+                                                {a.notes || 'ï¿½'}
                                             </span>
                                         </td>
                                         <td className="px-3 py-3">
@@ -208,7 +208,7 @@ export const StaffAppointments: React.FC = () => {
                                                     <i className="bi bi-check-circle me-1"></i>Mark Done
                                                 </Button>
                                             ) : (
-                                                <span className="text-secondary small">—</span>
+                                                <span className="text-secondary small">ï¿½</span>
                                             )}
                                         </td>
                                     </tr>
