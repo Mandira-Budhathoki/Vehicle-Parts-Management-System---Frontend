@@ -1,6 +1,3 @@
-// Feature 11 – Email Invoice API
-// Sends a completed sales invoice to the customer's email via POST /api/email/send-invoice
-
 const API_BASE = '/api/email';
 
 export interface SendInvoiceEmailData {
@@ -22,10 +19,7 @@ const getAuthHeaders = (): Record<string, string> => {
     };
 };
 
-/**
- * Feature 11: Staff sends an invoice email for a completed sale.
- * @param data  salesId (from POST /api/sales response) + customerEmail
- */
+
 export const sendInvoiceEmail = async (
     data: SendInvoiceEmailData
 ): Promise<SendInvoiceEmailResponse> => {
