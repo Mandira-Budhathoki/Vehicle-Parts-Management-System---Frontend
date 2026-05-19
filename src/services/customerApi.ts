@@ -1,8 +1,13 @@
-﻿// Customer feature API - Features 13 & 14
+// Customer feature API - Features 13 & 14
 // Appointments, Reviews, Part Requests, Sales History
 
 const API = '/api';
 const API_BASE = '/api/auth';
+
+export const getAuthHeader = (): Record<string, string> => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 // ==================== Auth ====================
 
