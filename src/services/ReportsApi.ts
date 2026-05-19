@@ -33,6 +33,43 @@ export interface PendingCredit {
     daysOverdue: number;
 }
 
+export interface FinancialBreakdownItem {
+    label: string;
+    revenue: number;
+    expenses: number;
+    profit: number;
+}
+
+export interface TopPart {
+    partId: number;
+    partName: string;
+    category: string;
+    quantitySold: number;
+    revenueGenerated: number;
+}
+
+export interface RecentTransaction {
+    id: string;
+    type: string;
+    date: string;
+    description: string;
+    amount: number;
+    status: string;
+}
+
+export interface FinancialReport {
+    period: string;
+    referenceDate: string;
+    totalRevenue: number;
+    totalExpenses: number;
+    netProfit: number;
+    totalSalesCount: number;
+    totalPurchasesCount: number;
+    breakdown: FinancialBreakdownItem[];
+    topSellingParts: TopPart[];
+    recentTransactions: RecentTransaction[];
+}
+
 export const reportsApi = {
     getRegularCustomers: async (): Promise<RegularCustomer[]> => {
         const res = await apiClient(`${BASE}/regular-customers`);
@@ -49,6 +86,13 @@ export const reportsApi = {
     getPendingCredits: async (): Promise<PendingCredit[]> => {
         const res = await apiClient(`${BASE}/pending-credits`);
         if (!res.ok) throw new Error('Failed to fetch pending credits');
+        return res.json();
+    },
+
+    getFinancialReport: async (period: string, date?: string): Promise<FinancialReport> => {
+        const url = `${BASE}/financial?period=${period}${date ? `&date=${date}` : ''}`;
+        const res = await apiClient(url);
+        if (!res.ok) throw new Error(`Failed to fetch financial report for ${period}`);
         return res.json();
     },
 };
