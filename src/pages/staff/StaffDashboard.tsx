@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Row, Col, Card, Alert, Button, Form, InputGroup } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 export const StaffDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/staff/customers?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <h2 className="mb-4 text-light fw-bold">Staff Dashboard</h2>
@@ -56,16 +67,23 @@ export const StaffDashboard: React.FC = () => {
       <Card className="bg-dark text-light border-secondary">
         <Card.Body>
           <h4 className="mb-3 text-light">Quick Search Customer</h4>
-          <InputGroup>
-            <InputGroup.Text className="bg-transparent border-secondary text-secondary">
-              <i className="bi bi-search"></i>
-            </InputGroup.Text>
-            <Form.Control 
-              type="text" 
-              placeholder="Search by vehicle number, phone, ID, or name..." 
-              className="bg-dark text-light border-secondary border-start-0 shadow-none ps-0"
-            />
-          </InputGroup>
+          <Form onSubmit={handleSearch}>
+            <InputGroup>
+              <InputGroup.Text className="bg-transparent border-secondary text-secondary">
+                <i className="bi bi-search"></i>
+              </InputGroup.Text>
+              <Form.Control 
+                type="text" 
+                placeholder="Search by vehicle number, phone, ID, or name..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-dark text-light border-secondary border-start-0 shadow-none ps-0"
+              />
+              <Button type="submit" variant="primary">
+                Search
+              </Button>
+            </InputGroup>
+          </Form>
         </Card.Body>
       </Card>
     </div>

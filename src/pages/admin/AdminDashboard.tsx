@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col, Card, Button, Alert } from 'react-bootstrap';
-import { mockParts } from '../../services/mockApi';
+const mockParts: any[] = [];
 
 export const AdminDashboard: React.FC = () => {
   const lowStockParts = mockParts.filter(p => p.stock < 10);
@@ -8,7 +8,7 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="animate-fade-in admin-dashboard">
       <h2 className="mb-4 text-light fw-bold">Admin Dashboard</h2>
-      
+
       <Row className="g-4 mb-4">
         <Col xs={12} sm={6} lg={3}>
           <Card className="bg-dark text-light border-secondary h-100">
@@ -75,7 +75,7 @@ export const AdminDashboard: React.FC = () => {
                 <i className="bi bi-exclamation-triangle-fill fs-5"></i>
                 <h4 className="mb-0">Critical Alerts</h4>
               </div>
-              
+
               {lowStockParts.length > 0 ? (
                 <div className="d-flex flex-column gap-3">
                   {lowStockParts.map(part => (
@@ -97,3 +97,4 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 };
+

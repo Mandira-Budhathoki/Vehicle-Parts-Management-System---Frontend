@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { registerCustomer } from '../../services/customerApi';
+import { registerCustomer } from '../../services/authApi';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 import { useToast } from '../../context/ToastContext';
 

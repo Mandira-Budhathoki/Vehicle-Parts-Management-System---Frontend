@@ -1,89 +1,341 @@
-import React from 'react';
-import { Row, Col, Card, Table, Button, Badge } from 'react-bootstrap';
-import { mockUsers } from '../../services/mockApi';
+﻿import React, { useEffect, useState, useCallback } from 'react';
+import {
+    Card, Table, Badge, Button, Spinner,
+    Modal, Nav, OverlayTrigger, Tooltip
+} from 'react-bootstrap';
+import { reportsApi, type RegularCustomer, type HighSpender, type PendingCredit } from '../../services/ReportsApi';
+import { useToast } from '../../context/ToastContext';
+
+type ActiveTab = 'regulars' | 'highSpenders' | 'pendingCredits';
+
+interface ModalState {
+    show: boolean;
+    title: string;
+    rows: { label: string; value: React.ReactNode }[];
+}
 
 export const StaffReports: React.FC = () => {
-  const highSpenders = mockUsers.filter(u => u.role === 'customer' && u.totalSpent && u.totalSpent > 2000);
-  const pendingCredits = mockUsers.filter(u => u.role === 'customer' && u.creditOverdueDays && u.creditOverdueDays > 0);
+    const { showToast } = useToast();
 
-  return (
-    <div className="animate-fade-in reports-wrapper">
-      <h2 className="mb-4 text-light fw-bold">Staff Reports & Insights</h2>
+    const [activeTab, setActiveTab] = useState<ActiveTab>('regulars');
 
-      <Row className="g-4">
-        <Col xs={12} lg={6}>
-          <Card className="bg-dark border-secondary h-100 overflow-hidden">
-            <Card.Header className="bg-primary bg-opacity-10 border-secondary p-3 d-flex align-items-center">
-              <h5 className="mb-0 text-light d-flex align-items-center gap-2">
-                <i className="bi bi-star-fill text-warning"></i> High Spenders / Regulars
-              </h5>
-            </Card.Header>
-            <Card.Body className="p-0">
-              <Table hover variant="dark" responsive className="mb-0">
-                <thead className="border-secondary">
-                  <tr>
-                    <th className="p-3 border-bottom-0">Customer</th>
-                    <th className="p-3 border-bottom-0">Total Spent</th>
-                    <th className="p-3 border-bottom-0">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {highSpenders.map(c => (
-                    <tr key={c.id}>
-                      <td className="p-3 border-secondary align-middle">{c.name}</td>
-                      <td className="p-3 border-secondary align-middle fw-bold">${c.totalSpent}</td>
-                      <td className="p-3 border-secondary align-middle">
-                        {c.totalSpent! > 5000 ? <Badge bg="success">Loyalty Program</Badge> : <Badge bg="secondary">Regular</Badge>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
+    const [regulars, setRegulars] = useState<RegularCustomer[]>([]);
+    const [highSpenders, setHighSpenders] = useState<HighSpender[]>([]);
+    const [pendingCredits, setPendingCredits] = useState<PendingCredit[]>([]);
 
-        <Col xs={12} lg={6}>
-          <Card className="bg-dark border-secondary h-100 overflow-hidden">
-            <Card.Header className="bg-danger bg-opacity-10 border-secondary p-3 d-flex align-items-center">
-              <h5 className="mb-0 text-light d-flex align-items-center gap-2">
-                <i className="bi bi-credit-card-fill text-danger"></i> Pending Credits
-              </h5>
-            </Card.Header>
-            <Card.Body className="p-0">
-              <Table hover variant="dark" responsive className="mb-0">
-                <thead className="border-secondary">
-                  <tr>
-                    <th className="p-3 border-bottom-0">Customer</th>
-                    <th className="p-3 border-bottom-0">Days Overdue</th>
-                    <th className="p-3 border-bottom-0">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingCredits.map(c => (
-                    <tr key={c.id}>
-                      <td className="p-3 border-secondary align-middle">
-                        <div>{c.name}</div>
-                        <small className="text-secondary">{c.phone}</small>
-                      </td>
-                      <td className="p-3 border-secondary align-middle">
-                        {c.creditOverdueDays! > 30 ? (
-                          <span className="text-danger fw-bold">{c.creditOverdueDays} days (CRITICAL)</span>
-                        ) : (
-                          <span>{c.creditOverdueDays} days</span>
-                        )}
-                      </td>
-                      <td className="p-3 border-secondary align-middle">
-                        <Button variant="outline-danger" size="sm">Notify</Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </div>
-  );
+    const [loading, setLoading] = useState<Record<ActiveTab, boolean>>({
+        regulars: false,
+        highSpenders: false,
+        pendingCredits: false,
+    });
+
+    const [modal, setModal] = useState<ModalState>({
+        show: false,
+        title: '',
+        rows: [],
+    });
+
+    const setTabLoading = (tab: ActiveTab, val: boolean) =>
+        setLoading(prev => ({ ...prev, [tab]: val }));
+
+    // ================= FETCH DATA =================
+    const fetchRegulars = useCallback(async () => {
+        setTabLoading('regulars', true);
+        try {
+            const data = await reportsApi.getRegularCustomers();
+            setRegulars(data);
+        } catch {
+            showToast('Failed to load regular customers report.', 'danger');
+        } finally {
+            setTabLoading('regulars', false);
+        }
+    }, [showToast]);
+
+    const fetchHighSpenders = useCallback(async () => {
+        setTabLoading('highSpenders', true);
+        try {
+            const data = await reportsApi.getHighSpenders();
+            setHighSpenders(data);
+        } catch {
+            showToast('Failed to load high spenders report.', 'danger');
+        } finally {
+            setTabLoading('highSpenders', false);
+        }
+    }, [showToast]);
+
+    const fetchPendingCredits = useCallback(async () => {
+        setTabLoading('pendingCredits', true);
+        try {
+            const data = await reportsApi.getPendingCredits();
+            setPendingCredits(data);
+        } catch {
+            showToast('Failed to load pending credits report.', 'danger');
+        } finally {
+            setTabLoading('pendingCredits', false);
+        }
+    }, [showToast]);
+
+    useEffect(() => {
+        if (activeTab === 'regulars' && regulars.length === 0) fetchRegulars();
+        if (activeTab === 'highSpenders' && highSpenders.length === 0) fetchHighSpenders();
+        if (activeTab === 'pendingCredits' && pendingCredits.length === 0) fetchPendingCredits();
+    }, [activeTab]);
+
+    const handleRefresh = () => {
+        if (activeTab === 'regulars') fetchRegulars();
+        if (activeTab === 'highSpenders') fetchHighSpenders();
+        if (activeTab === 'pendingCredits') fetchPendingCredits();
+        showToast('Report refreshed.', 'info');
+    };
+
+    // ================= MODALS =================
+    const openRegularDetail = (c: RegularCustomer) => setModal({
+        show: true,
+        title: `Regular Customer — ${c.name}`,
+        rows: [
+            { label: 'Customer ID', value: `#${c.userId}` },
+            { label: 'Email', value: c.email },
+            { label: 'Phone', value: c.phone },
+            { label: 'Total Orders', value: <Badge bg="primary">{c.totalOrders}</Badge> },
+            { label: 'Total Spent', value: <strong className="text-success">Rs. {c.totalSpent.toLocaleString()}</strong> },
+            { label: 'Last Purchase', value: new Date(c.lastPurchaseDate).toLocaleDateString() },
+        ],
+    });
+
+    const openHighSpenderDetail = (c: HighSpender) => setModal({
+        show: true,
+        title: `High Spender — ${c.name}`,
+        rows: [
+            { label: 'Customer ID', value: `#${c.userId}` },
+            { label: 'Email', value: c.email },
+            { label: 'Phone', value: c.phone },
+            { label: 'Total Spent', value: <strong className="text-warning">Rs. {c.totalSpent.toLocaleString()}</strong> },
+            { label: 'Total Orders', value: c.totalOrders },
+            {
+                label: 'Loyalty Status',
+                value: c.hasLoyaltyDiscount
+                    ? <Badge bg="success">10% Discount Eligible</Badge>
+                    : <Badge bg="secondary">Not Yet Eligible</Badge>
+            },
+        ],
+    });
+
+    const openCreditDetail = (c: PendingCredit) => setModal({
+        show: true,
+        title: `Pending Credit — ${c.name}`,
+        rows: [
+            { label: 'Customer ID', value: `#${c.userId}` },
+            { label: 'Invoice #', value: `#${c.salesId}` },
+            { label: 'Email', value: c.email },
+            { label: 'Phone', value: c.phone },
+            { label: 'Amount Due', value: <strong className="text-danger">Rs. {c.amountDue.toLocaleString()}</strong> },
+            { label: 'Sale Date', value: new Date(c.saleDate).toLocaleDateString() },
+            {
+                label: 'Days Overdue',
+                value: (
+                    <span className={c.daysOverdue > 60 ? 'text-danger fw-bold' : 'text-warning'}>
+                        {c.daysOverdue} days {c.daysOverdue > 60 ? '⚠ CRITICAL' : ''}
+                    </span>
+                )
+            },
+        ],
+    });
+
+    const isLoading = loading[activeTab];
+
+    const EmptyState: React.FC<{ message: string; icon: string }> = ({ message, icon }) => (
+        <div className="text-center py-5 text-secondary">
+            <i className={`bi ${icon} fs-1 mb-3 d-block`}></i>
+            <p className="mb-0">{message}</p>
+        </div>
+    );
+
+    const tabConfig: {
+        key: ActiveTab;
+        label: string;
+        icon: string;
+    }[] = [
+            {
+                key: 'regulars',
+                label: 'Regular Customers',
+                icon: 'bi-people-fill'
+            },
+            {
+                key: 'highSpenders',
+                label: 'High Spenders',
+                icon: 'bi-cash-coin'
+            },
+            {
+                key: 'pendingCredits',
+                label: 'Pending Credits',
+                icon: 'bi-exclamation-triangle-fill'
+            }
+        ];
+
+    return (
+        <div className="animate-fade-in">
+
+            {/* HEADER */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 className="fw-bold text-light mb-1">Customer Reports</h2>
+                    <p className="text-secondary mb-0 small">
+                        Insights into customers and financial status
+                    </p>
+                </div>
+
+                <Button variant="outline-secondary" size="sm" onClick={handleRefresh}>
+                    <i className="bi bi-arrow-clockwise"></i> Refresh
+                </Button>
+            </div>
+
+            {/* TABS */}
+            <Nav variant="pills" className="mb-4 gap-2">
+                {tabConfig.map(tab => (
+                    <Nav.Item key={tab.key}>
+                        <Nav.Link
+                            active={activeTab === tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                        >
+                            <i className={`bi ${tab.icon} me-2`}></i>
+                            {tab.label}
+                        </Nav.Link>
+                    </Nav.Item>
+                ))}
+            </Nav>
+
+            {/* LOADING */}
+            {isLoading && (
+                <div className="text-center py-5">
+                    <Spinner animation="border" variant="primary" />
+                    <p className="text-secondary mt-3">Loading...</p>
+                </div>
+            )}
+
+            {/* REGULARS */}
+            {!isLoading && activeTab === 'regulars' && (
+                <Card>
+                    <Card.Body className="p-0">
+                        <Table hover responsive>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Orders</th>
+                                    <th>Spent</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {regulars.map(c => (
+                                    <tr key={c.userId}>
+                                        <td>{c.name}</td>
+                                        <td><Badge bg="primary">{c.totalOrders}</Badge></td>
+                                        <td>Rs. {c.totalSpent.toLocaleString()}</td>
+                                        <td>
+                                            <Button size="sm" onClick={() => openRegularDetail(c)}>
+                                                View
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    </Card.Body>
+                </Card>
+            )}
+
+            {/* HIGH SPENDERS */}
+            {!isLoading && activeTab === 'highSpenders' && (
+                <Card>
+                    <Card.Body className="p-0">
+                        <Table hover responsive>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Spent</th>
+                                    <th>Orders</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {highSpenders.map(c => (
+                                    <tr key={c.userId}>
+                                        <td>{c.name}</td>
+                                        <td>Rs. {c.totalSpent.toLocaleString()}</td>
+                                        <td>{c.totalOrders}</td>
+                                        <td>
+                                            <Button size="sm" onClick={() => openHighSpenderDetail(c)}>
+                                                View
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    </Card.Body>
+                </Card>
+            )}
+
+            {/* PENDING CREDITS */}
+            {!isLoading && activeTab === 'pendingCredits' && (
+                <Card>
+                    <Card.Body className="p-0">
+                        <Table hover responsive>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Invoice</th>
+                                    <th>Due</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {pendingCredits.map(c => (
+                                    <tr key={`${c.userId}-${c.salesId}`}>
+                                        <td>{c.name}</td>
+                                        <td>#{c.salesId}</td>
+                                        <td className="text-danger">
+                                            Rs. {c.amountDue.toLocaleString()}
+                                        </td>
+                                        <td>
+                                            <Button size="sm" variant="danger" onClick={() => openCreditDetail(c)}>
+                                                View
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    </Card.Body>
+                </Card>
+            )}
+
+            {/* MODAL */}
+            <Modal show={modal.show} onHide={() => setModal(m => ({ ...m, show: false }))} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>{modal.title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <table className="w-100">
+                        <tbody>
+                            {modal.rows.map((row, i) => (
+                                <tr key={i}>
+                                    <td className="text-secondary pe-3">{row.label}</td>
+                                    <td>{row.value}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </Modal.Body>
+            </Modal>
+        </div>
+    );
 };
+
+// EMPTY STATE (kept in case you need later)
+const EmptyState: React.FC<{ message: string; icon: string }> = ({ message, icon }) => (
+    <div className="text-center py-5 text-secondary">
+        <i className={`bi ${icon} fs-1 mb-3 d-block`}></i>
+        <p className="mb-0">{message}</p>
+    </div>
+);
