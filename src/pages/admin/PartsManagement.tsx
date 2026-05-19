@@ -168,9 +168,8 @@ export const PartsManagement: React.FC = () => {
 
     return (
         <div
-            className="animate-fade-in h-100 d-flex flex-column text-light"
+            className="animate-fade-in h-100 d-flex flex-column"
             style={{
-                background: 'linear-gradient(145deg, #1a1a2e 0%, #16213e 100%)',
                 padding: '1.5rem',
                 borderRadius: '12px',
             }}
@@ -183,7 +182,7 @@ export const PartsManagement: React.FC = () => {
                     </div>
 
                     <h2
-                        className="mb-0 text-light fw-bold"
+                        className="mb-0 fw-bold"
                         style={{ letterSpacing: '0.5px' }}
                     >
                         Parts Inventory
@@ -207,10 +206,8 @@ export const PartsManagement: React.FC = () => {
             <div className="row g-3 mb-4">
                 <div className="col-6 col-md-3">
                     <Card
-                        className="border-0 shadow-lg text-center p-3"
+                        className="border-0 shadow-sm text-center p-3 bg-body-tertiary"
                         style={{
-                            background: 'rgba(30, 34, 45, 0.7)',
-                            backdropFilter: 'blur(10px)',
                             borderRadius: '16px',
                         }}
                     >
@@ -221,10 +218,8 @@ export const PartsManagement: React.FC = () => {
 
                 <div className="col-6 col-md-3">
                     <Card
-                        className="border-0 shadow-lg text-center p-3"
+                        className="border-0 shadow-sm text-center p-3 bg-body-tertiary"
                         style={{
-                            background: 'rgba(30, 34, 45, 0.7)',
-                            backdropFilter: 'blur(10px)',
                             borderRadius: '16px',
                         }}
                     >
@@ -237,10 +232,8 @@ export const PartsManagement: React.FC = () => {
 
                 <div className="col-6 col-md-3">
                     <Card
-                        className="border-0 shadow-lg text-center p-3"
+                        className="border-0 shadow-sm text-center p-3 bg-body-tertiary"
                         style={{
-                            background: 'rgba(30, 34, 45, 0.7)',
-                            backdropFilter: 'blur(10px)',
                             borderRadius: '16px',
                         }}
                     >
@@ -253,10 +246,8 @@ export const PartsManagement: React.FC = () => {
 
                 <div className="col-6 col-md-3">
                     <Card
-                        className="border-0 shadow-lg text-center p-3"
+                        className="border-0 shadow-sm text-center p-3 bg-body-tertiary"
                         style={{
-                            background: 'rgba(30, 34, 45, 0.7)',
-                            backdropFilter: 'blur(10px)',
                             borderRadius: '16px',
                         }}
                     >
@@ -295,10 +286,8 @@ export const PartsManagement: React.FC = () => {
 
             {/* Table */}
             <Card
-                className="text-light border-0 shadow-lg"
+                className="border-0 shadow-sm bg-body"
                 style={{
-                    background: 'rgba(30, 34, 45, 0.7)',
-                    backdropFilter: 'blur(10px)',
                     borderRadius: '16px',
                 }}
             >
@@ -317,7 +306,7 @@ export const PartsManagement: React.FC = () => {
                                 : `No parts in "${filterCategory}" category.`}
                         </div>
                     ) : (
-                        <Table hover variant="dark" responsive className="mb-0">
+                        <Table hover responsive className="mb-0">
                             <thead className="border-secondary">
                                 <tr>
                                     <th className="p-3 border-bottom-0">S.No</th>

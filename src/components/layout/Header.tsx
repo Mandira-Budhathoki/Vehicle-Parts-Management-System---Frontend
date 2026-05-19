@@ -1,10 +1,51 @@
-import React from 'react';
-import { Navbar, Nav, Dropdown, Form, InputGroup } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Navbar, Nav, Dropdown, Form, InputGroup, Badge } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../common/ThemeToggle';
+import { getNotifications, markAsRead, type AppNotification } from '../../services/notificationApi';
+import { ChangePasswordModal } from '../common/ChangePasswordModal';
 
 export const Header: React.FC = () => {
   const { user } = useAuth();
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      loadNotifications();
+      // Polling every 5 seconds for quicker testing
+      const interval = setInterval(loadNotifications, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const loadNotifications = async () => {
+    try {
+      const data = await getNotifications();
+      setNotifications(data);
+    } catch (error) {
+      console.error("Failed to load notifications", error);
+    }
+  };
+
+  const handleNotificationClick = async (notification: AppNotification) => {
+    if (notification.type === 'PASSWORD_RESET_REQUIRED') {
+      setShowPasswordModal(true);
+    }
+    
+    if (notification.isRead) return; // Already read
+    
+    try {
+      await markAsRead(notification.notificationId);
+      setNotifications(prev => 
+        prev.map(n => n.notificationId === notification.notificationId ? { ...n, isRead: true } : n)
+      );
+    } catch (error) {
+      console.error("Failed to mark notification as read", error);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <Navbar
@@ -29,19 +70,57 @@ export const Header: React.FC = () => {
         <Nav className="ms-auto d-flex align-items-center gap-3">
           <ThemeToggle className="me-2" />
 
-          <Nav.Link
-            href="#"
-            className="position-relative p-2 rounded-circle nav-icon-btn"
-            style={{ transition: 'background-color 0.2s' }}
-          >
-            <i className="bi bi-bell fs-5"></i>
-            <span
-              className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-              style={{ fontSize: '0.6rem' }}
+          <Dropdown align="end">
+            <Dropdown.Toggle
+              as="div"
+              className="position-relative p-2 rounded-circle nav-icon-btn"
+              style={{ cursor: 'pointer', transition: 'background-color 0.2s' }}
             >
-              3
-            </span>
-          </Nav.Link>
+              <i className="bi bi-bell fs-5"></i>
+              {unreadCount > 0 && (
+                <span
+                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                  style={{ fontSize: '0.6rem' }}
+                >
+                  {unreadCount}
+                </span>
+              )}
+            </Dropdown.Toggle>
+            
+            <Dropdown.Menu style={{ width: '300px', maxHeight: '400px', overflowY: 'auto' }} className="p-0 shadow">
+              <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
+                <h6 className="m-0 fw-bold">Notifications</h6>
+                {unreadCount > 0 && <Badge bg="primary">{unreadCount} New</Badge>}
+              </div>
+              <div className="notification-list">
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-muted">
+                    <i className="bi bi-bell-slash fs-4 d-block mb-2"></i>
+                    <small>No notifications</small>
+                  </div>
+                ) : (
+                  notifications.map(n => (
+                    <Dropdown.Item 
+                      key={n.notificationId} 
+                      className={`p-3 border-bottom ${n.isRead ? 'bg-transparent text-muted' : 'bg-light'}`}
+                      onClick={() => handleNotificationClick(n)}
+                      style={{ whiteSpace: 'normal' }}
+                    >
+                      <div className="d-flex gap-2">
+                        <i className={`bi ${n.type === 'ALERT' ? 'bi-exclamation-triangle text-warning' : 'bi-info-circle text-primary'} mt-1`}></i>
+                        <div>
+                          <p className="mb-1" style={{ fontSize: '0.85rem' }}>{n.message}</p>
+                          <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                            {new Date(n.createdAt).toLocaleString()}
+                          </small>
+                        </div>
+                      </div>
+                    </Dropdown.Item>
+                  ))
+                )}
+              </div>
+            </Dropdown.Menu>
+          </Dropdown>
 
           <Dropdown align="end">
             <Dropdown.Toggle
@@ -68,6 +147,11 @@ export const Header: React.FC = () => {
           </Dropdown>
         </Nav>
       </div>
+
+      <ChangePasswordModal 
+        show={showPasswordModal} 
+        onHide={() => setShowPasswordModal(false)} 
+      />
     </Navbar>
   );
 };

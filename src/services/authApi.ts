@@ -84,6 +84,24 @@ export const loginUser = async (data: LoginData) => {
     return response.json();
 };
 
+// Change Password
+export const changePassword = async (currentPassword: string, newPassword: string) => {
+    // using api from api.ts to get interceptors if any, but since we are using fetch here, I'll stick to fetch with authHeaders
+    const response = await fetch(`${API_BASE}/change-password`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({ message: 'Failed to change password' }));
+        // Format to match Axios error structure that the Modal expects (err.response?.data?.message)
+        throw { response: { data: { message: err.message || 'Failed to change password' } } };
+    }
+
+    return response.json();
+};
+
 // ==================== Customer Profile ====================
 
 // Get customer profile
