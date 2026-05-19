@@ -139,13 +139,14 @@ export const Header: React.FC = () => {
                                 )}
                             </div>
 
-                            {notifications.length === 0 ? (
-                                <div className="p-4 text-center text-muted">
-                                    <i className="bi bi-bell-slash fs-4 d-block mb-2"></i>
-                                    <small>No notifications</small>
-                                </div>
-                            ) : (
-                                notifications.map(n => (
+                            {notifications.length === 0
+                                ? (
+                                    <div className="p-4 text-center text-muted">
+                                        <i className="bi bi-bell-slash fs-4 d-block mb-2"></i>
+                                        <small>No notifications</small>
+                                    </div>
+                                )
+                                : notifications.map(n => (
                                     <Dropdown.Item
                                         key={n.notificationId}
                                         onClick={() => handleNotificationClick(n)}
@@ -174,7 +175,7 @@ export const Header: React.FC = () => {
                                         </div>
                                     </Dropdown.Item>
                                 ))
-                            )}
+                            }
                         </Dropdown.Menu>
                     </Dropdown>
 
