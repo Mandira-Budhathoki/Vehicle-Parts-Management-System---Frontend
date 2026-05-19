@@ -1,7 +1,6 @@
 import React, { useState, useEffect, type FC } from 'react';
 import { Card, Table, Badge, Button, Modal, Form, Spinner } from 'react-bootstrap';
 import { getStaff, registerStaff, updateStaff, deleteStaff, type User } from '../../services/staffService';
-const mockUsers: any[] = []; const mockParts: any[] = []; type User = any;
 
 export const StaffManagement: FC = () => {
   const [staff, setStaff] = useState<User[]>([]);
